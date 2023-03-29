@@ -2,8 +2,9 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'java'
-    id 'org.springframework.boot' version '2.7.7'
-    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'org.springframework.boot' version '3.0.2'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'org.graalvm.buildtools.native' version '0.9.20'
 }
 
 eclipse {
@@ -31,6 +32,18 @@ javadoc {
     options.encoding = 'UTF-8'
 }
 
+graalvmNative {
+    binaries {
+        main {
+            buildArgs.addAll(['--verbose', '-H:+ReportExceptionStackTraces'])
+            // buildArgs << '--verbose' << '-H:+ReportExceptionStackTraces'
+        }
+    }
+
+    toolchainDetection = true
+}
+
+
 group 'cc.xfl12345'
 version '1.0-SNAPSHOT'
 sourceCompatibility = JavaVersion.VERSION_17
@@ -43,7 +56,7 @@ dependencies {
     ArrayList<String> springBootDependencies = [
             // 'starter-actuator',
             // 'starter-thymeleaf',
-            'starter-web',
+            // 'starter-web',
             // 'starter-data-mongodb',
             'starter-aop',
             // 'starter-data-jdbc',
@@ -60,9 +73,9 @@ dependencies {
             }
     }
 
-    // SpringDoc 框架
-    // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.13'
+    // // SpringDoc 框架
+    // // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui
+    // implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.13'
 
 
     testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test')
