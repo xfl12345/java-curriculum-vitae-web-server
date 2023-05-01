@@ -1,8 +1,10 @@
 .gradle
 build/
-!gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+/config/
+
 
 ### IntelliJ IDEA ###
 .idea/
@@ -37,3 +39,13 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# Maven Wrapper
+/.mvn/*
+!/.mvn/wrapper/
+!/.mvn/wrapper/**
+
+# Gradle Wrapper
+/gradle/*
+!/gradle/wrapper/
+!/gradle/wrapper/**

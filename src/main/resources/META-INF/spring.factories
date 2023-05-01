@@ -1,0 +1,4 @@
+org.springframework.context.ApplicationListener=\
+  cc.xfl12345.person.cv.listener.AllEventListener
+org.springframework.boot.env.EnvironmentPostProcessor=\
+  cc.xfl12345.person.cv.initializer.EnvironmentOnCreatedInitializer

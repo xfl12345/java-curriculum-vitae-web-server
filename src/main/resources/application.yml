@@ -1,6 +1,6 @@
 spring:
     application:
-        name: mybigdata
+        name: xfl_cv
     #devtools:
     #    restart:
     #        enabled: true
@@ -10,14 +10,28 @@ spring:
     #        port: 54567
     thymeleaf:
         cache: false
+    datasource:
+        username: ${spring.application.name}
+        password: ${spring.application.name}
+        url: "jdbc:mysql://localhost:3306/${spring.application.name}?characterEncoding=utf8&characterSetResults=utf8&serverTimezone=${spring.jackson.time-zone}&allowMultiQueries=true&nullCatalogMeansCurrent=true&useInformationSchema=true&remarks=true"
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        type: com.zaxxer.hikari.HikariDataSource
+        hikari:
+            auto-commit: true
+            connection-timeout: 60000
+            connection-test-query: SELECT 1
+            minimum-idle: 5
+            maximum-pool-size: 50
     sql:
         init:
             encoding: UTF-8
     jackson:
-        date-format: yyyy-MM-dd HH:mm:ss.SSS
         property-naming-strategy: LOWER_CAMEL_CASE
         time-zone: Asia/Hong_Kong
         default-property-inclusion: non_null
+        serialization:
+          write-date-keys-as-timestamps: false
+
     servlet:
         multipart:
             max-file-size: -1
@@ -29,6 +43,7 @@ spring:
     data:
         rest:
             default-media-type: application/json
+
 
 
 server:
@@ -50,21 +65,40 @@ server:
     http2:
         enabled: true
 
-debug: true
 
 logging:
+    config: classpath:cc/xfl12345/person/cv/log/conf/logback-spring.xml
     charset:
         file: UTF-8
+    file:
+        name: ${spring.application.name}
 
 bee:
     osql:
+        moreTable:
+            columnListWithStar: false
+        notCatchModifyDuplicateException: true
         showSQL: true
         showSql:
             showType: true
             showExecutableSql: true
             donotPrintCurrentDate: false
-        moreTable:
-            columnListWithStar: false
-        notCatchModifyDuplicateException: true
+
+############## Sa-Token 配置 (文档: https://sa-token.cc) ##############
+sa-token:
+  # token名称 (同时也是cookie名称)
+  token-name: ${spring.application.name}
+  # token有效期，单位s 默认30天, -1代表永不过期
+  timeout: 2592000
+  # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
+  activity-timeout: 600
+  # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
+  is-concurrent: false
+  # 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token)
+  is-share: false
+  # token风格
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: true
 
 

@@ -1,0 +1,480 @@
+{
+  "groups": [
+  ],
+  "properties": [
+    {
+      "name": "app.web.resource-location",
+      "type": "java.lang.String",
+      "description": "Web静态资源路径",
+      "sourceType": "cc.xfl12345.person.cv.conf.WebResourceConfig"
+    },
+    {
+      "name": "app.web.servlet-path",
+      "type": "java.lang.String",
+      "description": "Web静态资源servlet路径",
+      "sourceType": "cc.xfl12345.person.cv.conf.WebResourceConfig"
+    },
+    {
+      "name": "bee.db.driverName",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.levelTwoTimeout",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.openDefineColumn",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.password",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.androidDbVersion",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.startDeleteRate",
+      "type": "java.lang.Double",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.modifySyn",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.notShowModifyDuplicateException",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.timeout",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.useLevelTwo",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.isHarmony",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.profiles.type",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.fullUsedRate",
+      "type": "java.lang.Double",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.showSql.showType",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.prototype",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.genid.startYear",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.never",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.naming.translateType",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.jndiName",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cacheRedis.host",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.pearFlowerId.randomNumBound",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.selectJson.timestampWithMillisecond",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.genid.generatorType",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.showSql.donotPrintCurrentDate",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.moreTable.columnListWithStar",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.type",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cacheRedis.soTimeout",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.username",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cacheRedis.connectionTimeout",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.isAndroid",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.selectJson.timeWithMillisecond",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.returnStringList.nullToEmptyString",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.androidDbName",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.schemaName",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.sqlKeyWordCase",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cacheRedis.ssl",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.dateFormat",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.readDB",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.profiles.active",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.selectJson.dateWithMillisecond",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.harmonyDbName",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.insertBatchSize",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.defalutDS",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.moreTable.twoTablesWithJoinOnStyle",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.mapSize",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cacheRedis.password",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.selectJson.longToString",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.keyUseMD5",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.nocache",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.writeDB",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.notDeleteWholeRecords",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.jndiType",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cacheRedis.database",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.matchTable",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.genid.excludesEntityList",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.pearFlowerId.tolerateSecond",
+      "type": "java.lang.Long",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.pearFlowerId.useHalfWorkId",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.showSql.showExecutableSql",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.lang",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.logDonotPrintLevel",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.rDbRouteWay",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.naming.useMoreTranslateType",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.matchEntityClassPath",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.pearFlowerId.switchWorkIdTimeThreshold",
+      "type": "java.lang.Long",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.showSQL",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.enable",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.systemLoggerLevel",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.workResultSetSize",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.genid.replaceOldId",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.selectJson.ignoreNull",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.notCatchModifyDuplicateException",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.url",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.notUpdateWholeRecords",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.loggerType",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.genid.includesEntityList",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.harmonyDbReadonly",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.naming.entity2tableMappingList",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.levelOneTolevelTwo",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.fullClearRate",
+      "type": "java.lang.Double",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.genid.workerid",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.dosql.multiDS.differentDbType",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cacheRedis.port",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cacheRedis.clientName",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.dbName",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.forever",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.naming.toLowerCaseBefore",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.cache.levelTwoEntityList",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.distribution.genid.forAllTableLongId",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.openFieldTypeHandler",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.osql.sqlLoggerLevel",
+      "type": "java.lang.String",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.harmonyDbVersion",
+      "type": "java.lang.Integer",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    },
+    {
+      "name": "bee.db.pagingWithLimitOffset",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.teasoft.honey.osql.core.HoneyConfig"
+    }
+  ],
+  "hints": [
+  ]
+}
