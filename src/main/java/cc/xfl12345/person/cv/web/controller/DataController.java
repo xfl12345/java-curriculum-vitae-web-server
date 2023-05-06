@@ -26,9 +26,5 @@ public class DataController {
         log.debug("6666666666666666666666666");
     }
 
-    @GetMapping("login")
-    public boolean isLogin() {
-        return true;
-    }
 
 }

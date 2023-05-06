@@ -2,27 +2,74 @@ package cc.xfl12345.person.cv.web.controller;
 
 import cc.xfl12345.person.cv.web.ControllerConst;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.util.SaResult;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Objects;
+import java.util.Random;
+
 @DependsOn(ControllerConst.dependsOnBean)
 @RestController
+@Slf4j
 public class LoginController {
 
+    protected Environment springAppEnv;
+
+    protected int validationCodeLimitLength = 6;
+
+    @Autowired
+    public void setSpringAppEnv(Environment springAppEnv) {
+        this.springAppEnv = springAppEnv;
+    }
+
+    protected String getAdminPhoneNumber() {
+        return springAppEnv.getProperty("app.webui.admin.phone-number");
+    }
+
+    protected String getAdminPassword() {
+        return springAppEnv.getProperty("app.webui.admin.password");
+    }
+
+    @PostConstruct
+    public void init() {
+        Random random = new Random();
+        validationCodeLimitLength =  (Objects.requireNonNull(getAdminPhoneNumber())
+                    .length() * (int) (Math.ceil(random.nextDouble(2, 5))));
+    }
+
+    @GetMapping("validation-code-limit-length")
+    public int getValidationCodeLimitLength() {
+        return validationCodeLimitLength;
+    }
+
     @PostMapping("login")
-    public boolean login() {
+    public SaResult login(String phoneNumber, String validationCode) {
+        log.info("phoneNumber:[%s], validationCode:[%s]".formatted(phoneNumber, validationCode));
         if (!StpUtil.isLogin()) {
-            StpUtil.login("666");
+            if (phoneNumber.equals(getAdminPhoneNumber())) {
+                if (validationCode.equals(getAdminPassword())) {
+                    StpUtil.login("admin");
+                }
+            } else {
+                StpUtil.login("666");
+            }
+            return SaResult.ok("登录成功");
         }
 
-        return true;
+        return SaResult.error("登录失败");
     }
 
     @PostMapping("logout")
     public boolean logout() {
         if (StpUtil.isLogin()) {
-            StpUtil.logout("666");
+            StpUtil.logout();
         }
 
         return true;
@@ -33,7 +80,8 @@ public class LoginController {
         return true;
     }
 
-    public boolean isLogin() {
+    @GetMapping("login/status")
+    public boolean status() {
         return StpUtil.isLogin();
     }
 

@@ -12,7 +12,6 @@ import cloud.tianai.captcha.resource.impl.DefaultImageCaptchaResourceManager;
 import cloud.tianai.captcha.resource.impl.DefaultResourceStore;
 import cloud.tianai.captcha.resource.impl.provider.ClassPathResourceProvider;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -93,26 +92,6 @@ public class MyTianaiCaptchaConfig {
 
         String pictureClassPath = "cc/xfl12345/person/cv/picture/";
 
-        // Map<String, URL> urlMap = ClassPathResourceUtils.getURL(
-        //     pictureClassPath
-        // ).values().parallelStream().reduce(new ConcurrentHashMap<>(), (mergedMap, map) -> {
-        //     mergedMap.putAll(map);
-        //     return mergedMap;
-        // });
-        // Map<String, URL> tmpUrlMap = new HashMap<>(urlMap.size());
-        // for (Map.Entry<String, URL> kv: urlMap.entrySet()){
-        //     FileObject fileObject = ramFileSystem.resolveFile(pictureClassPath + kv.getKey());
-        //     fileObject.createFile();
-        //     FileContent fileContent = fileObject.getContent();
-        //     OutputStream outputStream = fileContent.getOutputStream();
-        //     try (outputStream) {
-        //         IOUtils.copy(kv.getValue(), outputStream);
-        //     }
-        //     URL ramFileURL = fileObject.getURL();
-        //     tmpUrlMap.put(ramFileURL.toString(), ramFileURL);
-        // }
-        // urlMap = tmpUrlMap;
-
         Map<String, URL> urlMap = ClassPathResourceUtils.getURL(
             pictureClassPath
         ).values().parallelStream().reduce(new ConcurrentHashMap<>(), (mergedMap, map) -> {
@@ -137,7 +116,6 @@ public class MyTianaiCaptchaConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean
     public ImageCaptchaResourceManager imageCaptchaResourceManager(CachedUrlResourceProvider resourceProvider, ResourceStore resourceStore) {
         ImageCaptchaResourceManager manager = new DefaultImageCaptchaResourceManager(resourceStore);
         manager.registerResourceProvider(resourceProvider);
