@@ -1,0 +1,25 @@
+[
+  {
+    "name": "cc.xfl12345.person.cv.Main",
+    "allDeclaredFields": true,
+    "allDeclaredClasses": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      },
+      {
+        "name": "main",
+        "parameterTypes": [
+          "java.lang.String[]"
+        ]
+      },
+      {
+        "name": "restart",
+        "parameterTypes": []
+      }
+    ]
+  }
+]

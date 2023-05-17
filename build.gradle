@@ -5,6 +5,7 @@ plugins {
     id 'org.springframework.boot' version '3.0.6'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'org.graalvm.buildtools.native' version '0.9.20'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
 eclipse {
@@ -32,16 +33,26 @@ javadoc {
     options.encoding = 'UTF-8'
 }
 
+// javafx {
+//     version = '17.0.2'
+//     modules = [
+//             'javafx.controls',
+//             'javafx.fxml',
+//             'javafx.graphics',
+//             'javafx.media',
+//             'javafx.web'
+//     ]
+// }
+
 graalvmNative {
     binaries {
         main {
             buildArgs.addAll([
                 '--verbose',
-                '-H:+IncludeAllLocales',
+                '-H:+AddAllCharsets',
                 '-H:+ReportExceptionStackTraces',
                 '--enable-url-protocols="jar,http,https"'
             ])
-            // buildArgs << '--verbose' << '-H:+ReportExceptionStackTraces'
         }
     }
 
@@ -72,21 +83,22 @@ dependencies {
     compileOnly group: 'org.springframework.boot', name: 'spring-boot-loader'
 
     ArrayList<String> springBootDependencies = [
-            // 'starter-actuator',
-            // 'starter-thymeleaf',
-            'starter-web',
-            // 'starter-data-mongodb',
-            'starter-aop',
-            'starter-data-jdbc',
-            // 'starter-data-jpa',
-            // 'devtools',
-            'configuration-processor'
+            // 'spring-boot-starter-actuator',
+            // 'spring-boot-starter-thymeleaf',
+            'spring-boot-starter-web',
+            // 'spring-boot-starter-websocket',
+            // 'spring-boot-starter-data-mongodb',
+            'spring-boot-starter-aop',
+            'spring-boot-starter-data-jdbc',
+            // 'spring-boot-starter-data-jpa',
+            // 'spring-boot-devtools',
+            'spring-boot-configuration-processor'
     ]
 
     springBootDependencies.each {
         moduleName ->
             {
-                implementation group: 'org.springframework.boot', name: 'spring-boot-' + moduleName
+                implementation group: 'org.springframework.boot', name: moduleName
                 // implementation group: 'org.springframework.boot', name: 'spring-boot-' + moduleName, ext: 'pom'
             }
     }
@@ -97,29 +109,27 @@ dependencies {
     compileOnly group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
 
 
-    // // SpringDoc 框架
+    // SpringDoc 框架
     // // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui
     // implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.13'
+    // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.0.4'
 
+
+    // 中国国产ORM框架 bee
     // https://mvnrepository.com/artifact/org.teasoft/bee-spring-boot
-    implementation (group: 'org.teasoft', name: 'bee-spring-boot', version: '1.17')
+    // implementation (group: 'org.teasoft', name: 'bee-spring-boot', version: '2.0.boot3.0.6')
+    // https://jitpack.io/#com.gitee.xfl12345/bee-springboot/94c97ea3ba
+    implementation 'com.gitee.xfl12345:bee-springboot:94c97ea3ba'
 
     // 中国国产Web鉴权框架 Sa-Token
     // https://mvnrepository.com/artifact/cn.dev33/sa-token-spring-boot3-starter
     implementation group: 'cn.dev33', name: 'sa-token-spring-boot3-starter', version: '1.34.0'
 
-    // // 中国国产Web人机验证框架 tianai-captcha
-    // // https://mvnrepository.com/artifact/cloud.tianai.captcha/tianai-captcha
-    // implementation group: 'cloud.tianai.captcha', name: 'tianai-captcha', version: '1.3.3'
-
-
+    // 中国国产人机验证框架 天爱有情captcha
     // implementation group: 'cloud.tianai.captcha', name: 'tianai-captcha-springboot3-starter', version: '1.3.3'
-    implementation 'com.gitee.xfl12345:tianai-captcha-springboot-starter:f5d8ad8335'
-
-
-    // SpringDoc 框架
-    // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.0.4'
+    // https://jitpack.io/#com.gitee.xfl12345/tianai-captcha-springboot-starter/2388684230
+    implementation 'com.gitee.xfl12345:tianai-captcha-springboot-starter:2388684230'
 
 
     // // https://mvnrepository.com/artifact/org.apache.commons/commons-vfs2
@@ -127,7 +137,6 @@ dependencies {
     //
     // // https://mvnrepository.com/artifact/commons-io/commons-io
     // implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
-
 
 
     // // 阿里巴巴 短信验证码 云服务API
@@ -143,12 +152,6 @@ dependencies {
     testAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
     testImplementation group: 'org.projectlombok', name: 'lombok'
 
-    // JAVA JNA
-    String javaJnaVersion = '5.12.1'
-    // https://mvnrepository.com/artifact/net.java.dev.jna/jna
-    implementation group: 'net.java.dev.jna', name: 'jna', version: javaJnaVersion
-    // https://mvnrepository.com/artifact/net.java.dev.jna/jna
-    implementation group: 'net.java.dev.jna', name: 'jna-platform', version: javaJnaVersion
 
     // javax
     // https://mvnrepository.com/artifact/javax.persistence/javax.persistence-api
@@ -190,6 +193,8 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
 
     testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test')
+
+    implementation fileTree(dir:'lib',includes:['**/*.*'])
 }
 
 test {

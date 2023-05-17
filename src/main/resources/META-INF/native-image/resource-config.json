@@ -1,0 +1,15 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "cc/xfl12345/.*"
+      },
+      {
+        "pattern": "org/teasoft/.*"
+      },
+      {
+        "pattern": "cn/dev33/.*"
+      }
+    ]
+  }
+}

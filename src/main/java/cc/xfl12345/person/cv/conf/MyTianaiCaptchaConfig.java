@@ -11,6 +11,7 @@ import cloud.tianai.captcha.resource.common.model.dto.Resource;
 import cloud.tianai.captcha.resource.impl.DefaultImageCaptchaResourceManager;
 import cloud.tianai.captcha.resource.impl.DefaultResourceStore;
 import cloud.tianai.captcha.resource.impl.provider.ClassPathResourceProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -95,9 +96,15 @@ public class MyTianaiCaptchaConfig {
         Map<String, URL> urlMap = ClassPathResourceUtils.getURL(
             pictureClassPath
         ).values().parallelStream().reduce(new ConcurrentHashMap<>(), (mergedMap, map) -> {
-            map.values().parallelStream().forEach(url -> mergedMap.put(url.toString(), url));
+            map.entrySet().parallelStream().forEach(item -> mergedMap.put(item.getKey(), item.getValue()));
             return mergedMap;
         });
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        log.info(objectMapper.valueToTree(urlMap).toPrettyString());
+        // log.info(objectMapper.valueToTree(ClassPathResourceUtils.getURL("")).toPrettyString());
+
+        urlMap.remove(pictureClassPath);
         cachedUrlResourceProvider.putAllURL(urlMap);
         urlMap.keySet().forEach(url -> {
             log.info("TianaiCaptcha adding classpath resource:[" + url + ']');

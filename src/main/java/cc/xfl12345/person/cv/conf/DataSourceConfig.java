@@ -2,14 +2,12 @@ package cc.xfl12345.person.cv.conf;
 
 import cc.xfl12345.person.cv.initializer.MyDatabaseInitializer;
 import com.zaxxer.hikari.HikariDataSource;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@Slf4j
 public class DataSourceConfig {
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource.hikari")

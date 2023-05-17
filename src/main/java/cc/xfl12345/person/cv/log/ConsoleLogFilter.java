@@ -40,6 +40,7 @@ public class ConsoleLogFilter extends Filter<ILoggingEvent> {
         canonicalName2Threshold.put("org.apache.catalina.util.LifecycleBase", Level.INFO);
         canonicalName2Threshold.put("org.apache.catalina.mapper.MapperListener", Level.DEBUG);
         canonicalName2Threshold.put("com.zaxxer.hikari.pool.PoolBase", Level.INFO);
+        canonicalName2Threshold.put("cloud.tianai.captcha.spring.cache.ConCurrentExpiringMap", Level.INFO);
 
         secondLevelCache = new ConcurrentHashMap<>(prefixName2Threshold.size()  << 2);
     }

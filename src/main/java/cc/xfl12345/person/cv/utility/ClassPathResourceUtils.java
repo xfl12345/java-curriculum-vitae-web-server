@@ -1,36 +1,51 @@
 package cc.xfl12345.person.cv.utility;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
+@Slf4j
 public class ClassPathResourceUtils {
     private static final URL HACK_URL;
 
     static {
         try {
-            HACK_URL = new URL("jar:http://somehost/somejar.jar!/");
+            HACK_URL = new URL("jar:file://somehost/somejar.jar!/");
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static class PathDetail {
+        private final String path;
         private final String relativePath;
 
         private final String fileName;
 
+        private final boolean directory;
+
         private final boolean file;
 
-        public PathDetail(String relativePath, String fileName, boolean isFile) {
+        public PathDetail(String path, String relativePath, String fileName, boolean isDirectory, boolean isFile) {
+            this.path = path;
             this.relativePath = relativePath;
             this.fileName = fileName;
+            this.directory = isDirectory;
             this.file = isFile;
+        }
+
+        public String getPath() {
+            return path;
         }
 
         public String getRelativePath() {
@@ -41,6 +56,9 @@ public class ClassPathResourceUtils {
             return fileName;
         }
 
+        public boolean isDirectory() {
+            return directory;
+        }
 
         public boolean isFile() {
             return file;
@@ -50,8 +68,8 @@ public class ClassPathResourceUtils {
     public static class UrlPathDetail extends PathDetail {
         private final URL url;
 
-        public UrlPathDetail(URL url, String relativePath, String fileName, boolean isFile) {
-            super(relativePath, fileName, isFile);
+        public UrlPathDetail(URL url, String path, String relativePath, String fileName, boolean isDirectory, boolean isFile) {
+            super(path, relativePath, fileName, isDirectory, isFile);
             this.url = url;
         }
 
@@ -123,27 +141,70 @@ public class ClassPathResourceUtils {
         return base.relativize(child).getPath();
     }
 
+    public static FileSystem getFileSystemViaURL(URL url, ClassLoader classLoader) {
+        try {
+            return FileSystems.getFileSystem(url.toURI());
+        } catch (URISyntaxException | FileSystemNotFoundException e) {
+            // ignore
+        }
 
-    public static Map<String, URL> findResourceUrlByFile(
-        final File originRoot,
-        Predicate<? super UrlPathDetail> filter,
-        boolean recursive) throws MalformedURLException {
-        return internalFindResourceByFile(originRoot, originRoot, filter, recursive, true);
+        FileSystem fileSystem = null;
+        try {
+            String protocol = url.getProtocol();
+            fileSystem = FileSystems.newFileSystem(URI.create(protocol + ":/"), Map.of(), classLoader);
+
+            // 注册 JVM 关闭钩子。有始有终。
+            FileSystem finalFileSystem = fileSystem;
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try{
+                    Class<?> fileSystemClass = finalFileSystem.getClass();
+                    finalFileSystem.close();
+                    //do something
+                    System.out.println(String.format("FileSystem [%s] closed safety.", fileSystemClass.getCanonicalName()));
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }));
+        } catch (IOException | FileSystemAlreadyExistsException e) {
+            // ignore
+        }
+
+        if (fileSystem == null) {
+            try {
+                fileSystem = FileSystems.getFileSystem(url.toURI());
+            } catch (URISyntaxException | FileSystemNotFoundException e) {
+                // ignore
+            }
+        }
+
+        return fileSystem;
     }
 
-    private static Map<String, URL> internalFindResourceByFile(
+    private static Map<String, URL> internalFindResourceViaFile(
         final File originRoot,
         final File currentRoot,
+        final String baseClassPath,
         Predicate<? super UrlPathDetail> filter,
         boolean recursive,
         boolean isGetURL) throws MalformedURLException {
-        // 如果不存在或者 也不是目录就直接返回
-        if (!currentRoot.exists() || !currentRoot.isDirectory()) {
+        // 如果不存在，直接返回
+        if (!currentRoot.exists()) {
+            return Collections.emptyMap();
+        }
+
+        // 目标对象就是文件，不需要遍历
+        if (originRoot.isFile()) {
+            String fileName = originRoot.getName();
+            URI fileURI = originRoot.toURI();
+            URL fileURL = isGetURL ? fileURI.toURL() : HACK_URL;
+            if (filter.test(new UrlPathDetail(fileURL, baseClassPath, "", fileName, false, true))) {
+                return Map.of(baseClassPath, fileURL);
+            }
+
             return Collections.emptyMap();
         }
 
         Map<String, URL> urls = new ConcurrentHashMap<>();
-
         String[] fileNames = currentRoot.list();
         if (fileNames != null) {
             try {
@@ -154,14 +215,15 @@ public class ClassPathResourceUtils {
                         // 如果是个文件夹
                         if (file.isDirectory()) {
                             if (recursive) {
-                                urls.putAll(internalFindResourceByFile(originRoot, file, filter, recursive, isGetURL));
+                                urls.putAll(internalFindResourceViaFile(originRoot, file, baseClassPath, filter, recursive, isGetURL));
                             }
                         } else {
                             URI fileURI = file.toURI();
                             URL fileURL = isGetURL ? fileURI.toURL() : HACK_URL;
-                            String relativePath = getFileUriRelativizePath(originRoot.toURI(), fileURI);
-                            if (filter.test(new UrlPathDetail(fileURL, relativePath, fileName, file.isFile()))) {
-                                urls.put(relativePath, fileURL);
+                            String relativeFilePath = getFileUriRelativizePath(originRoot.toURI(), fileURI);
+                            String path = baseClassPath + '/' + relativeFilePath;
+                            if (filter.test(new UrlPathDetail(fileURL, path, relativeFilePath, fileName, file.isDirectory(), file.isFile()))) {
+                                urls.put(path, fileURL);
                             }
                         }
                     } catch (MalformedURLException urlException) {
@@ -181,12 +243,12 @@ public class ClassPathResourceUtils {
     }
 
 
-    public static Map<String, URL> findResourceUrlByJarURLConnection(
+    public static Map<String, URL> findResourceUrlViaJarURLConnection(
         JarURLConnection jarURLConnection,
         Predicate<? super UrlPathDetail> filter,
         boolean recursive,
         boolean crudeMode) throws IOException {
-        return internalFindResourceByJarURLConnection(
+        return internalFindResourceViaJarURLConnection(
             jarURLConnection,
             filter,
             recursive,
@@ -195,7 +257,21 @@ public class ClassPathResourceUtils {
         );
     }
 
-    private static Map<String, URL> internalFindResourceByJarURLConnection(
+    public static Set<String> findResourcePathViaJarURLConnection(
+        JarURLConnection jarURLConnection,
+        Predicate<? super UrlPathDetail> filter,
+        boolean recursive,
+        boolean crudeMode) throws IOException {
+        return internalFindResourceViaJarURLConnection(
+            jarURLConnection,
+            filter,
+            recursive,
+            crudeMode,
+            false
+        ).keySet();
+    }
+
+    private static Map<String, URL> internalFindResourceViaJarURLConnection(
         JarURLConnection jarURLConnection,
         Predicate<? super UrlPathDetail> filter,
         boolean recursive,
@@ -217,7 +293,7 @@ public class ClassPathResourceUtils {
 
             JarFileUrlCache jarFileUrlCache = new JarFileUrlCache(jarURLConnection, crudeMode);
 
-            return internalFindResourceUrlByJarURLConnection(
+            return internalFindResourceUrlViaJarURLConnection(
                 jarFileUrlCache,
                 originRoot,
                 filter,
@@ -233,7 +309,7 @@ public class ClassPathResourceUtils {
         }
     }
 
-    private static Map<String, URL> internalFindResourceUrlByJarURLConnection(
+    private static Map<String, URL> internalFindResourceUrlViaJarURLConnection(
         final JarFileUrlCache jarFileUrlCache,
         String originRoot,
         Predicate<? super UrlPathDetail> filter,
@@ -267,7 +343,8 @@ public class ClassPathResourceUtils {
                             boolean isInCurrentFolder = lastIndexOfSplitChar < 0;
                             // // 如果不是以 左斜杠'/'，则是文件
                             // boolean isFile = relativeFilePath.charAt(relativeFilePath.length() - 1) != '/';
-                            boolean isFile = !jarEntry.isDirectory();
+                            boolean isDirectory = jarEntry.isDirectory();
+                            boolean isFile = !isDirectory;
                             // 以下两种情况会被允许进入分支。
                             // 1.允许递归（无需考虑是否位于子目录）
                             // 2.位于当前目录的对象（无需考虑是否允许递归 ）
@@ -277,14 +354,14 @@ public class ClassPathResourceUtils {
                                     relativeFilePath : relativeFilePath.substring(lastIndexOfSplitChar + 1);
                                 // jar包根目录的URL + jar包内路径 = 目标文件路径
                                 URL fileURL = isGetURL ? new URL(jarFileRootUrl, jarFileInternalPath) : HACK_URL;
-                                if (filter.test(new UrlPathDetail(fileURL, relativeFilePath, fileName, isFile))) {
-                                    urls.put(relativeFilePath, fileURL);
+                                if (filter.test(new UrlPathDetail(fileURL, jarFileInternalPath, relativeFilePath, fileName, isDirectory, isFile))) {
+                                    urls.put(jarFileInternalPath, fileURL);
                                 }
                             }
                         } else {
-                            URL fileURL = new URL(jarFileRootUrl, jarFileInternalPath);
-                            if (filter.test(new UrlPathDetail(fileURL, relativeFilePath, "", false))) {
-                                urls.put(relativeFilePath, fileURL);
+                            URL fileURL = isGetURL ? new URL(jarFileRootUrl, jarFileInternalPath) : HACK_URL;
+                            if (filter.test(new UrlPathDetail(fileURL, jarFileInternalPath, relativeFilePath, "", true, false))) {
+                                urls.put(jarFileInternalPath, fileURL);
                             }
                         }
                     }
@@ -297,6 +374,98 @@ public class ClassPathResourceUtils {
                 throw e;
             }
             throw runtimeException;
+        }
+
+        return urls;
+    }
+
+
+    public static Map<String, URL> findResourceUrlViaFileSystem(
+        final FileSystem fileSystem,
+        final String rootPath,
+        ClassLoader classLoader,
+        Predicate<? super UrlPathDetail> filter,
+        boolean recursive) throws IOException {
+        return internalFindResourceUrlViaFileSystem(
+            fileSystem,
+            rootPath,
+            classLoader,
+            filter,
+            recursive,
+            true
+        );
+    }
+
+    public static Set<String> findResourcePathViaFileSystem(
+        final FileSystem fileSystem,
+        final String rootPath,
+        ClassLoader classLoader,
+        Predicate<? super UrlPathDetail> filter,
+        boolean recursive) throws IOException {
+        return internalFindResourceUrlViaFileSystem(
+            fileSystem,
+            rootPath,
+            classLoader,
+            filter,
+            recursive,
+            false
+        ).keySet();
+    }
+
+    private static Map<String, URL> internalFindResourceUrlViaFileSystem(
+        final FileSystem fileSystem,
+        final String rootPath,
+        ClassLoader classLoader,
+        Predicate<? super UrlPathDetail> filter,
+        boolean recursive,
+        boolean isGetURL) throws IOException {
+
+        Map<String, URL> urls = new ConcurrentHashMap<>();
+
+        Path fileSystemPath = fileSystem.getPath(rootPath);
+        try (Stream<Path> pathStream = Files.walk(fileSystemPath).parallel()) {
+            if ("".equals(rootPath)) {
+                pathStream.forEach(path -> {
+                    String theClassPath = path.toString();
+                    Path pathFileName = path.getFileName();
+                    String fileName = pathFileName == null ? "" : pathFileName.toString();
+                    int lastIndexOfSplitChar = theClassPath.lastIndexOf('/');
+                    // 是否位于当前目录
+                    boolean isInCurrentFolder = lastIndexOfSplitChar < 0;
+                    if (recursive || isInCurrentFolder) {
+                        URL fileURL = isGetURL ? classLoader.getResource(theClassPath) : HACK_URL;
+                        if (fileURL != null && filter.test(new UrlPathDetail(fileURL, theClassPath, theClassPath, fileName, Files.isDirectory(path), Files.isRegularFile(path)))) {
+                            urls.put(theClassPath, fileURL);
+                        }
+                    }
+                });
+
+            } else {
+                pathStream.forEach(path -> {
+                    String theClassPath = path.toString();
+                    if (theClassPath.startsWith(rootPath)) {
+                        String relativeFilePath = theClassPath.substring(rootPath.length());
+                        Path pathFileName = path.getFileName();
+                        String fileName = pathFileName == null ? "" : pathFileName.toString();
+                        if (relativeFilePath.length() != 0) {
+                            int lastIndexOfSplitChar = relativeFilePath.lastIndexOf('/');
+                            // 是否位于当前目录
+                            boolean isInCurrentFolder = lastIndexOfSplitChar < 0;
+                            if (recursive || isInCurrentFolder) {
+                                URL fileURL = isGetURL ? classLoader.getResource(theClassPath) : HACK_URL;
+                                if (fileURL != null && filter.test(new UrlPathDetail(fileURL, theClassPath, relativeFilePath, fileName, Files.isDirectory(path), Files.isRegularFile(path)))) {
+                                    urls.put(theClassPath, fileURL);
+                                }
+                            }
+                        } else {
+                            URL fileURL = isGetURL ? classLoader.getResource(theClassPath) : HACK_URL;
+                            if (fileURL != null && filter.test(new UrlPathDetail(fileURL, rootPath, relativeFilePath, fileName, Files.isDirectory(path), Files.isRegularFile(path)))) {
+                                urls.put(rootPath, fileURL);
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         return urls;
@@ -327,31 +496,45 @@ public class ClassPathResourceUtils {
         Enumeration<URL> dirs = classLoader.getResources(path);
         Map<String, Map<String, URL>> urls = new ConcurrentHashMap<>();
 
+        List<URL> dirsList = Collections.list(dirs);
+
         // 遍历
         try {
-            Collections.list(dirs).parallelStream().forEach(url -> {
+            ClassLoader finalClassLoader = classLoader;
+            dirsList.parallelStream().forEach(url -> {
+                Map<String, URL> map = Collections.emptyMap();
                 try {
-                    Map<String, URL> map = Collections.emptyMap();
                     // 得到协议的名称
                     String protocol = url.getProtocol();
                     // 如果是以文件的形式保存在服务器上
                     if ("file".equals(protocol)) {
                         // 以文件的方式扫描整个classpath下的文件 并添加到集合中
-                        File file = new File(url.getPath());
-                        map = findResourceUrlByFile(file, finalFilter, recursive);
+                        File file = new File(URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8));
+                        map = internalFindResourceViaFile(
+                            file,
+                            file,
+                            path,
+                            finalFilter,
+                            recursive,
+                            true
+                        );
                     } else if ("jar".equals(protocol)) {
                         // 如果是jar包文件
                         JarURLConnection jarURLConnection = (JarURLConnection) url.openConnection();
-                        map = findResourceUrlByJarURLConnection(
+                        map = findResourceUrlViaJarURLConnection(
                             jarURLConnection,
                             finalFilter,
                             recursive,
                             crudeMode
                         );
+                    } else {
+                        FileSystem fileSystem = Objects.requireNonNull(getFileSystemViaURL(url, finalClassLoader));
+                        map = findResourceUrlViaFileSystem(fileSystem, path, finalClassLoader, finalFilter, recursive);
                     }
-                    urls.put(url.toString(), map);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
+                } finally {
+                    urls.put(url.toString(), map);
                 }
             });
         } catch (RuntimeException runtimeException) {
@@ -370,28 +553,6 @@ public class ClassPathResourceUtils {
     public static Map<String, Map<String, URL>> getURL(String path) throws IOException {
         return getURL(path, null, null, true);
     }
-
-    public static Set<String> findResourcePathByFile(
-        final File originRoot,
-        Predicate<? super PathDetail> filter,
-        boolean recursive) throws MalformedURLException {
-        return internalFindResourceByFile(originRoot, originRoot, filter, recursive, false).keySet();
-    }
-
-    public static Set<String> findResourcePathByJarURLConnection(
-        JarURLConnection jarURLConnection,
-        Predicate<? super PathDetail> filter,
-        boolean recursive,
-        boolean crudeMode) throws IOException {
-        return internalFindResourceByJarURLConnection(
-            jarURLConnection,
-            filter,
-            recursive,
-            crudeMode,
-            false
-        ).keySet();
-    }
-
 
     public static Map<String, Set<String>> listPath2File(
         String path,
@@ -412,34 +573,46 @@ public class ClassPathResourceUtils {
             currentClassLoaderModule.getName().startsWith("java");
 
         // 定义一个枚举的集合 并进行循环来处理这个目录下的东西
-        Enumeration<URL> dirs = classLoader.getResources(path);
+        List<URL> dirs = Collections.list(classLoader.getResources(path));
         ConcurrentHashMap<String, Set<String>> paths = new ConcurrentHashMap<>();
 
         // 遍历
         try {
-            Collections.list(dirs).parallelStream().forEach(url -> {
+            ClassLoader finalClassLoader = classLoader;
+            dirs.parallelStream().forEach(url -> {
+                Set<String> set = Collections.emptySet();
                 try {
-                    Set<String> set = Collections.emptySet();
                     // 得到协议的名称
                     String protocol = url.getProtocol();
                     // 如果是以文件的形式保存在服务器上
                     if ("file".equals(protocol)) {
                         // 以文件的方式扫描整个classpath下的文件 并添加到集合中
-                        File file = new File(url.getPath());
-                        set = findResourcePathByFile(file, finalFilter, recursive);
+                        File file = new File(URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8));
+                        set = internalFindResourceViaFile(
+                            file,
+                            file,
+                            path,
+                            finalFilter,
+                            recursive,
+                            false
+                        ).keySet();
                     } else if ("jar".equals(protocol)) {
                         // 如果是jar包文件
                         JarURLConnection jarURLConnection = (JarURLConnection) url.openConnection();
-                        set = findResourcePathByJarURLConnection(
+                        set = findResourcePathViaJarURLConnection(
                             jarURLConnection,
                             finalFilter,
                             recursive,
                             crudeMode
                         );
+                    } else {
+                        FileSystem fileSystem = Objects.requireNonNull(getFileSystemViaURL(url, finalClassLoader));
+                        set = findResourcePathViaFileSystem(fileSystem, path, finalClassLoader, finalFilter, recursive);
                     }
-                    paths.put(url.toString(), set);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
+                } finally {
+                    paths.put(url.toString(), set);
                 }
             });
         } catch (RuntimeException runtimeException) {

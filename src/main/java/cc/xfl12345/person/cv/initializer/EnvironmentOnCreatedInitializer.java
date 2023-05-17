@@ -2,7 +2,6 @@ package cc.xfl12345.person.cv.initializer;
 
 
 import cc.xfl12345.person.cv.appconst.EnvConst;
-import cc.xfl12345.person.cv.utility.ConsoleCharsetUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
@@ -11,7 +10,6 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 
 import java.io.File;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
@@ -46,22 +44,9 @@ public class EnvironmentOnCreatedInitializer implements EnvironmentPostProcessor
             properties.setProperty(EnvConst.LOGGING_FILE_NAME, fileNameBase);
         }
 
-        String loggingCharsetConsole = environment.getProperty(EnvConst.LOGGING_CHARSET_CONSOLE);
-        if ((loggingCharsetConsole == null || "".equals(loggingCharsetConsole))) {
-            Charset charset = null;
-            ConsoleCharsetUtils consoleCharsetUtils = new ConsoleCharsetUtils();
-            try {
-                consoleCharsetUtils.init();
-                charset = consoleCharsetUtils.getCharset();
-            } catch (Exception ignore) {
-            }
-            if (charset != null) {
-                System.out.println("Current console charset name is [" + charset.name() + "]");
-            } else {
-                System.out.println("Retrieve environment charset failed. Using 'UTF-8' as default.");
-                charset = StandardCharsets.UTF_8;
-            }
-            properties.setProperty(EnvConst.LOGGING_CHARSET_CONSOLE, charset.name());
+        String loggingCharsetConsole = environment.getProperty(EnvConst.LOGGING_CHARSET_CONSOLE, StandardCharsets.UTF_8.name());
+        if ("".equals(loggingCharsetConsole)) {
+            properties.setProperty(EnvConst.LOGGING_CHARSET_CONSOLE, StandardCharsets.UTF_8.name());
         }
 
         String logBaseFolder = environment.getProperty("logging.file.path");
