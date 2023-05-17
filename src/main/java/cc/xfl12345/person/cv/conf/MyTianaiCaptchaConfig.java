@@ -11,7 +11,6 @@ import cloud.tianai.captcha.resource.common.model.dto.Resource;
 import cloud.tianai.captcha.resource.impl.DefaultImageCaptchaResourceManager;
 import cloud.tianai.captcha.resource.impl.DefaultResourceStore;
 import cloud.tianai.captcha.resource.impl.provider.ClassPathResourceProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,41 +30,6 @@ public class MyTianaiCaptchaConfig {
     public CachedUrlResourceProvider cachedUrlResourceProvider() {
         return new CachedUrlResourceProvider();
     }
-
-    // public Set<String> getClassPathResource(String path) throws IOException {
-    //     // Set<String> pictureRelatvieClassPathSet = ClassPathResourceUtils.getURL(
-    //     //     pictureClassPath,
-    //     //     null,
-    //     //     null,
-    //     //     true
-    //     // ).values().parallelStream().reduce(new ConcurrentHashMap<>(), (mergedMap, map) -> {
-    //     //     mergedMap.putAll(map);
-    //     //     return mergedMap;
-    //     // }).keySet();
-    //     // pictureRelatvieClassPathSet.remove("");
-    //
-    //     Set<String> resourceSet = ClassPathResourceUtils.listPath2File(
-    //         path,
-    //         null,
-    //         null,
-    //         true
-    //     ).values().parallelStream().reduce((mergedSet, set) -> {
-    //         mergedSet.addAll(set);
-    //         return mergedSet;
-    //     }).orElse(Collections.emptySet());
-    //     resourceSet.remove("");
-    //
-    //     return resourceSet;
-    // }
-
-    // public Map<String, URL> getResourceUrlMap(String path) throws IOException {
-    //     return ClassPathResourceUtils.getURL(
-    //         path
-    //     ).values().parallelStream().reduce(new ConcurrentHashMap<>(), (mergedMap, map) -> {
-    //         map.values().parallelStream().forEach(url -> mergedMap.put(url.toString(), url));
-    //         return mergedMap;
-    //     });
-    // }
 
     @Bean
     public ResourceStore resourceStore(CachedUrlResourceProvider cachedUrlResourceProvider) throws IOException {
@@ -99,10 +63,6 @@ public class MyTianaiCaptchaConfig {
             map.entrySet().parallelStream().forEach(item -> mergedMap.put(item.getKey(), item.getValue()));
             return mergedMap;
         });
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        log.info(objectMapper.valueToTree(urlMap).toPrettyString());
-        // log.info(objectMapper.valueToTree(ClassPathResourceUtils.getURL("")).toPrettyString());
 
         urlMap.remove(pictureClassPath);
         cachedUrlResourceProvider.putAllURL(urlMap);
