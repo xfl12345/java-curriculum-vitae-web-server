@@ -40,7 +40,7 @@ public class LoginController {
     @PostConstruct
     public void init() {
         Random random = new Random();
-        validationCodeLimitLength =  (Objects.requireNonNull(getAdminPhoneNumber())
+        validationCodeLimitLength =  (Objects.requireNonNull(getAdminPassword())
                     .length() * (int) (Math.ceil(random.nextDouble(2, 5))));
     }
 
