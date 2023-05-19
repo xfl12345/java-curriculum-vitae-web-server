@@ -1,6 +1,6 @@
-package cc.xfl12345.person.cv.web.controller;
+package cc.xfl12345.person.cv.controller;
 
-import cc.xfl12345.person.cv.web.ControllerConst;
+import cc.xfl12345.person.cv.appconst.ControllerConst;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

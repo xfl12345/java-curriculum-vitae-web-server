@@ -1,6 +1,6 @@
-package cc.xfl12345.person.cv.web.controller;
+package cc.xfl12345.person.cv.controller;
 
-import cc.xfl12345.person.cv.web.ControllerConst;
+import cc.xfl12345.person.cv.appconst.ControllerConst;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import jakarta.annotation.PostConstruct;
@@ -22,11 +22,18 @@ public class LoginController {
 
     protected Environment springAppEnv;
 
+    protected CaptchaController captchaController;
+
     protected int validationCodeLimitLength = 6;
 
     @Autowired
     public void setSpringAppEnv(Environment springAppEnv) {
         this.springAppEnv = springAppEnv;
+    }
+
+    @Autowired
+    public void setCaptchaController(CaptchaController captchaController) {
+        this.captchaController = captchaController;
     }
 
     protected String getAdminPhoneNumber() {
@@ -40,8 +47,8 @@ public class LoginController {
     @PostConstruct
     public void init() {
         Random random = new Random();
-        validationCodeLimitLength =  (Objects.requireNonNull(getAdminPassword())
-                    .length() * (int) (Math.ceil(random.nextDouble(2, 5))));
+        validationCodeLimitLength = (Objects.requireNonNull(getAdminPassword())
+            .length() * (int) (Math.ceil(random.nextDouble(2, 5))));
     }
 
     @GetMapping("validation-code-limit-length")
@@ -56,11 +63,13 @@ public class LoginController {
             if (phoneNumber.equals(getAdminPhoneNumber())) {
                 if (validationCode.equals(getAdminPassword())) {
                     StpUtil.login("admin");
+                    return SaResult.ok("登录成功");
                 }
             } else {
+                // TODO 完善鉴权
                 StpUtil.login("666");
+                return SaResult.ok("登录成功");
             }
-            return SaResult.ok("登录成功");
         }
 
         return SaResult.error("登录失败");

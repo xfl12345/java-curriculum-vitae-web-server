@@ -1,4 +1,4 @@
-package cc.xfl12345.person.cv.web;
+package cc.xfl12345.person.cv.appconst;
 
 public class ControllerConst {
     public static final String dependsOnBean = "sessionFactory";

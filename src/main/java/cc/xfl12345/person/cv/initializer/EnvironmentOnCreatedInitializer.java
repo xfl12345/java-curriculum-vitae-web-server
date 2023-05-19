@@ -44,9 +44,10 @@ public class EnvironmentOnCreatedInitializer implements EnvironmentPostProcessor
             properties.setProperty(EnvConst.LOGGING_FILE_NAME, fileNameBase);
         }
 
-        String loggingCharsetConsole = environment.getProperty(EnvConst.LOGGING_CHARSET_CONSOLE, StandardCharsets.UTF_8.name());
-        if ("".equals(loggingCharsetConsole)) {
-            properties.setProperty(EnvConst.LOGGING_CHARSET_CONSOLE, StandardCharsets.UTF_8.name());
+        String loggingCharsetConsole = environment.getProperty(EnvConst.LOGGING_CHARSET_CONSOLE);
+        if (loggingCharsetConsole == null || "".equals(loggingCharsetConsole)) {
+            loggingCharsetConsole = StandardCharsets.UTF_8.name();
+            properties.setProperty(EnvConst.LOGGING_CHARSET_CONSOLE, loggingCharsetConsole);
         }
 
         String logBaseFolder = environment.getProperty("logging.file.path");
