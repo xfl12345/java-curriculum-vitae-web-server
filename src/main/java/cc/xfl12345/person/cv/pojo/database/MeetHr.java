@@ -1,4 +1,4 @@
-package cc.xfl12345.person.cv.pojo;
+package cc.xfl12345.person.cv.pojo.database;
 
 import java.io.Serializable;
 import java.util.Date;

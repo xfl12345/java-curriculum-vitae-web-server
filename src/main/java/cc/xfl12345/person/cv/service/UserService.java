@@ -1,4 +1,4 @@
-package cc.xfl12345.person.cv.model;
+package cc.xfl12345.person.cv.service;
 
 import cn.dev33.satoken.stp.StpUtil;
 import org.springframework.stereotype.Service;

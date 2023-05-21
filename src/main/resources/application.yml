@@ -1,28 +1,12 @@
 spring:
     application:
         name: xfl_cv
-    main:
-        allow-bean-definition-overriding: true
-    #devtools:
-    #    restart:
-    #        enabled: true
-    #        #additional-paths: src/main/java
-    #        trigger-file: .restartTriggerFile
-    #    livereload:
-    #        port: 54567
     thymeleaf:
         cache: false
     cache:
-        #cache-names:
-        #    - buckets
-        #caffeine:
-        #    spec: maximumSize=1000000,expireAfterAccess=3600s
-        #infinispan:
-        #    config: classpath:cc/xfl12345/person/cv/conf/infinispan.xml
         type: jcache
         jcache:
             config: classpath:cc/xfl12345/person/cv/conf/ehcache.xml
-            #provider: org.ehcache.jsr107.EhcacheCachingProvider
     datasource:
         username: ${spring.application.name}
         password: ${spring.application.name}
@@ -44,7 +28,6 @@ spring:
         default-property-inclusion: non_null
         serialization:
             write-date-keys-as-timestamps: false
-
     servlet:
         multipart:
             max-file-size: -1
@@ -78,20 +61,6 @@ server:
         enabled: true
 
 
-## actuator 监控配置
-#management:
-#    endpoints:
-#        web:
-#            exposure:
-#                #默认值访问health,info端点  用*可以包含全部端点
-#                include: "*"
-#    endpoint:
-#        shutdown:
-#            enabled: true #打开shutdown端点
-#        health:
-#            show-details: always #获得健康检查中所有指标的详细信息
-
-
 logging:
     config: classpath:cc/xfl12345/person/cv/conf/logback-spring.xml
     charset:
@@ -102,28 +71,6 @@ logging:
 bucket4j:
     enabled: true
     cache-to-use: jcache
-    # filters:
-    #     -   cache-name: buckets
-    #         filter-method: servlet
-    #         filter-order: 99999999
-    #         http-content-type: application/json;charset=UTF-8
-    #         url: .*
-    #         metrics:
-    #             tags:
-    #                 -   key: IP
-    #                     expression: getRemoteAddr()
-    #                     types: REJECTED_COUNTER # for data privacy reasons the IP should only be collected on bucket rejections
-    #                 -   key: LOGINID
-    #                     expression: "@userService.getLoginId() != null ? @userService.getLoginId() : 'anonymous'"
-    #                 -   key: URL
-    #                     expression: getRequestURI()
-    #         rate-limits:
-    #             -   cache-key: "@userService.getLoginId()?: getRemoteAddr()"
-    #                 execute-condition:
-    #                 bandwidths: # 根据 登录ID 或 IP地址 限速
-    #                     -   capacity: 2
-    #                         time: 1
-    #                         unit: minutes
 
 
 bee:

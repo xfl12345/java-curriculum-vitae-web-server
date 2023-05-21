@@ -127,29 +127,6 @@ dependencies {
     // https://mvnrepository.com/artifact/org.ehcache/ehcache
     implementation group: 'org.ehcache', name: 'ehcache', version: '3.10.8', classifier: 'jakarta'
 
-    // // bucket4j springboot starter 推荐依赖， jcache 模式必要依赖
-    // // https://mvnrepository.com/artifact/org.infinispan/infinispan-spring-boot-starter-embedded
-    // implementation group: 'org.infinispan', name: 'infinispan-spring-boot3-starter-embedded', version: '14.0.9.Final'
-
-    // // https://mvnrepository.com/artifact/com.bucket4j/bucket4j-infinispan
-    // implementation group: 'com.bucket4j', name: 'bucket4j-infinispan', version: '8.1.0'
-
-    // // https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus
-    // implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.11.0'
-
-    // // bucket4j springboot starter 推荐依赖，一个分布式缓存框架 hazelcast
-    // // https://mvnrepository.com/artifact/com.hazelcast/hazelcast-spring
-    // implementation group: 'com.hazelcast', name: 'hazelcast-spring', version: '5.2.3'
-
-    // String caffeineVersion = '3.1.6'
-    // // bucket4j springboot starter 推荐依赖，一个缓存本地框架 caffeine
-    // // https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
-    // implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: caffeineVersion
-    //
-    // // https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/jcache
-    // implementation group: 'com.github.ben-manes.caffeine', name: 'jcache', version: caffeineVersion
-
-
 
     // 中国国产ORM框架 bee
     // https://mvnrepository.com/artifact/org.teasoft/bee-spring-boot

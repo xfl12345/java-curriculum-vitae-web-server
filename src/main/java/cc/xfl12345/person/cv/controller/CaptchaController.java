@@ -1,7 +1,7 @@
 package cc.xfl12345.person.cv.controller;
 
 
-import cc.xfl12345.person.cv.model.SmsService;
+import cc.xfl12345.person.cv.service.SmsService;
 import cc.xfl12345.person.cv.appconst.JsonApiConst;
 import cc.xfl12345.person.cv.appconst.JsonApiResult;
 import cc.xfl12345.person.cv.pojo.request.SmsValidationCodeRequestData;
@@ -14,12 +14,13 @@ import cloud.tianai.captcha.spring.vo.ImageCaptchaVO;
 import cloud.tianai.captcha.validator.common.model.dto.ImageCaptchaTrack;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import io.github.bucket4j.Bucket;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.cache.Cache;
+import javax.cache.CacheManager;
 import java.util.Map;
 
 
@@ -48,6 +49,16 @@ public class CaptchaController {
         this.smsService = smsService;
     }
 
+    private Cache<String, Bucket> sss;
+
+    private CacheManager cacheManager;
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    public void setCacheManager(CacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+    }
+
     @GetMapping("generate")
     @ResponseBody
     public CaptchaResponse<ImageCaptchaVO> genCaptcha(@RequestParam(value = "type", required = false)String type) {
@@ -59,28 +70,24 @@ public class CaptchaController {
 
     @PostMapping("check")
     @ResponseBody
-    public JsonApiResponseData checkCaptcha(HttpServletRequest request, @RequestParam("id") String id, @RequestBody ImageCaptchaTrack imageCaptchaTrack) {
-        HttpSession httpSession = request.getSession();
-        synchronized (httpSession) {
-
-        }
-
-
+    public JsonApiResponseData checkCaptcha(@RequestParam("id") String id, @RequestBody ImageCaptchaTrack imageCaptchaTrack) {
         JsonApiResponseData responseData = new JsonApiResponseData(JsonApiConst.VERSION);
         boolean currentResult = imageCaptchaApplication.matching(id, imageCaptchaTrack);
 
         if (currentResult) {
             try {
                 SmsValidationCodeRequestData extraData = objectMapper.treeToValue(objectMapper.valueToTree(imageCaptchaTrack.getData()), SmsValidationCodeRequestData.class);
-                String phoneNumber = extraData.data != null && extraData.data.phoneNumber != null ? extraData.data.phoneNumber : "";
-                String operation = extraData.operation != null ? extraData.operation : "";
-                // 请求拉取短信验证码
-                if (operation.equals("pull-sms-validation-code") && !"".equals(phoneNumber)) {
-                    currentResult = smsService.sendSmsValidationCode(phoneNumber);
-                    responseData.setApiResult(currentResult ? JsonApiResult.SUCCEED : JsonApiResult.FAILED);
-                } else {
-                    currentResult = false;
-                    responseData.setApiResult(JsonApiResult.FAILED_INVALID);
+                if (extraData != null) {
+                    String phoneNumber = extraData.data != null && extraData.data.phoneNumber != null ? extraData.data.phoneNumber : "";
+                    String operation = extraData.operation != null ? extraData.operation : "";
+                    // 请求拉取短信验证码
+                    if (operation.equals("pull-sms-validation-code") && !"".equals(phoneNumber)) {
+                        currentResult = smsService.sendSmsValidationCode(phoneNumber);
+                        responseData.setApiResult(currentResult ? JsonApiResult.SUCCEED : JsonApiResult.FAILED);
+                    } else {
+                        currentResult = false;
+                        responseData.setApiResult(JsonApiResult.FAILED_INVALID);
+                    }
                 }
             } catch (JsonProcessingException e) {
                 currentResult = false;

@@ -8,7 +8,7 @@ import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
 
 @Slf4j
-public class AllEventListener implements ApplicationListener<ApplicationEvent> {
+public class AllSpringEventListener implements ApplicationListener<ApplicationEvent> {
     @Override
     public void onApplicationEvent(final ApplicationEvent event) {
         // 忽略请求事件
