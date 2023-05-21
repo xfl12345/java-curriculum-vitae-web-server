@@ -18,26 +18,25 @@ public class AnyUserRequestRateLimitHelper {
     protected RateLimitHelper limitViaLoginId;
 
     public AnyUserRequestRateLimitHelper(
-        @Nonnull CacheManager cacheManager,
         @Nonnull String cacheNamePrefix,
+        @Nonnull CacheManager cacheManager,
         @Nonnull RequestAnalyser requestAnalyser,
         long ipAddressFrequencyInMinute,
         long loginIdFrequencyInMinute) {
         String limitViaIpAddressCacheName = cacheNamePrefix + "LimitViaIpAddress";
         String limitViaLoginIdCacheName = cacheNamePrefix + "LimitViaLoginId";
 
+        this.requestAnalyser = requestAnalyser;
+
         limitViaIpAddress = new RateLimitHelper(
             cacheManager.getCache(limitViaIpAddressCacheName),
             ipAddressFrequencyInMinute
         );
 
-
         limitViaLoginId = new RateLimitHelper(
             cacheManager.getCache(limitViaLoginIdCacheName),
             loginIdFrequencyInMinute
         );
-
-        this.requestAnalyser = requestAnalyser;
     }
 
     protected String getLoginId() {

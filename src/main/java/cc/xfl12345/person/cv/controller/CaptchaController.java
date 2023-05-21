@@ -1,11 +1,13 @@
 package cc.xfl12345.person.cv.controller;
 
 
-import cc.xfl12345.person.cv.service.SmsService;
 import cc.xfl12345.person.cv.appconst.JsonApiConst;
 import cc.xfl12345.person.cv.appconst.JsonApiResult;
+import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelper;
+import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelperFactory;
 import cc.xfl12345.person.cv.pojo.request.SmsValidationCodeRequestData;
 import cc.xfl12345.person.cv.pojo.response.JsonApiResponseData;
+import cc.xfl12345.person.cv.service.SmsService;
 import cloud.tianai.captcha.common.constant.CaptchaTypeConstant;
 import cloud.tianai.captcha.spring.application.ImageCaptchaApplication;
 import cloud.tianai.captcha.spring.plugins.secondary.SecondaryVerificationApplication;
@@ -14,13 +16,12 @@ import cloud.tianai.captcha.spring.vo.ImageCaptchaVO;
 import cloud.tianai.captcha.validator.common.model.dto.ImageCaptchaTrack;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bucket4j.Bucket;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
 import java.util.Map;
 
 
@@ -49,14 +50,22 @@ public class CaptchaController {
         this.smsService = smsService;
     }
 
-    private Cache<String, Bucket> sss;
+    private AnyUserRequestRateLimitHelperFactory rateLimitHelperFactory;
 
-    private CacheManager cacheManager;
+    private AnyUserRequestRateLimitHelper pullSmsValidationCodeRateLimitHelper = null;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public void setCacheManager(CacheManager cacheManager) {
-        this.cacheManager = cacheManager;
+    public void setRateLimitHelperFactory(AnyUserRequestRateLimitHelperFactory rateLimitHelperFactory) {
+        this.rateLimitHelperFactory = rateLimitHelperFactory;
+    }
+
+    @PostConstruct
+    public void init() {
+        pullSmsValidationCodeRateLimitHelper = rateLimitHelperFactory.generate(
+            "pullSmsValidationCodeRate",
+            1,
+            1
+        );
     }
 
     @GetMapping("generate")
@@ -70,7 +79,7 @@ public class CaptchaController {
 
     @PostMapping("check")
     @ResponseBody
-    public JsonApiResponseData checkCaptcha(@RequestParam("id") String id, @RequestBody ImageCaptchaTrack imageCaptchaTrack) {
+    public JsonApiResponseData checkCaptcha(HttpServletRequest request, @RequestParam("id") String id, @RequestBody ImageCaptchaTrack imageCaptchaTrack) {
         JsonApiResponseData responseData = new JsonApiResponseData(JsonApiConst.VERSION);
         boolean currentResult = imageCaptchaApplication.matching(id, imageCaptchaTrack);
 
@@ -82,8 +91,13 @@ public class CaptchaController {
                     String operation = extraData.operation != null ? extraData.operation : "";
                     // 请求拉取短信验证码
                     if (operation.equals("pull-sms-validation-code") && !"".equals(phoneNumber)) {
-                        currentResult = smsService.sendSmsValidationCode(phoneNumber);
-                        responseData.setApiResult(currentResult ? JsonApiResult.SUCCEED : JsonApiResult.FAILED);
+                        JsonApiResponseData apiData = pullSmsValidationCodeRateLimitHelper.tryConsume(request);
+                        if (apiData.getCode() == JsonApiResult.SUCCEED.getNum()) {
+                            currentResult = smsService.sendSmsValidationCode(phoneNumber);
+                            responseData.setApiResult(currentResult ? JsonApiResult.SUCCEED : JsonApiResult.FAILED);
+                        } else {
+                            responseData = apiData;
+                        }
                     } else {
                         currentResult = false;
                         responseData.setApiResult(JsonApiResult.FAILED_INVALID);

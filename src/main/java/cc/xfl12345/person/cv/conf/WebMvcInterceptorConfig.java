@@ -2,17 +2,14 @@ package cc.xfl12345.person.cv.conf;
 
 import cc.xfl12345.person.cv.interceptor.RateLimitInterceptor;
 import cc.xfl12345.person.cv.interceptor.SecretDataRequestInterceptor;
-import cc.xfl12345.person.cv.pojo.RequestAnalyser;
+import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelperFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import javax.cache.CacheManager;
 
 @Configuration
 public class WebMvcInterceptorConfig implements WebMvcConfigurer {
@@ -25,18 +22,14 @@ public class WebMvcInterceptorConfig implements WebMvcConfigurer {
     }
 
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    @DependsOn("bucket4jCacheResolver")
     @Bean
     public RateLimitInterceptor rateLimitInterceptor(
         ObjectMapper objectMapper,
-        CacheManager cacheManager,
-        RequestAnalyser requestAnalyser) {
+        AnyUserRequestRateLimitHelperFactory factory) {
 
         RateLimitInterceptor interceptor = new RateLimitInterceptor();
         interceptor.setObjectMapper(objectMapper);
-        interceptor.setCacheManager(cacheManager);
-        interceptor.setRequestAnalyser(requestAnalyser);
+        interceptor.setAnyUserRequestRateLimitHelperFactory(factory);
 
         return interceptor;
     }

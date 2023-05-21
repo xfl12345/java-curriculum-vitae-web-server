@@ -47,7 +47,19 @@
         <heap unit="entries">9000000</heap>
     </cache>
 
-    <cache alias="pullSmsValidationCodeRateLimit">
+    <cache alias="pullSmsValidationCodeRateLimitViaIpAddress">
+        <key-type>java.lang.String</key-type>
+        <value-type>io.github.bucket4j.Bucket</value-type>
+        <expiry>
+            <ttl unit="seconds">120</ttl>
+        </expiry>
+        <!--<heap-store-settings>-->
+        <!--    <max-object-size>1000000</max-object-size>-->
+        <!--</heap-store-settings>-->
+        <heap unit="entries">1000000</heap>
+    </cache>
+
+    <cache alias="pullSmsValidationCodeRateLimitViaLoginId">
         <key-type>java.lang.String</key-type>
         <value-type>io.github.bucket4j.Bucket</value-type>
         <expiry>
