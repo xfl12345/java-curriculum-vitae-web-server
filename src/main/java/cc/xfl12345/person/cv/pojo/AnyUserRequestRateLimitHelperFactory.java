@@ -20,15 +20,15 @@ public class AnyUserRequestRateLimitHelperFactory {
 
     public AnyUserRequestRateLimitHelper generate(
         String cacheNamePrefix,
-        long ipAddressFrequencyInMinute,
-        long loginIdFrequencyInMinute) {
+        SimpleBucketConfig ipAddressBucketConfig,
+        SimpleBucketConfig loginIdBucketConfig) {
 
         return new AnyUserRequestRateLimitHelper(
             cacheNamePrefix,
             cacheManager,
             requestAnalyser,
-            ipAddressFrequencyInMinute,
-            loginIdFrequencyInMinute
+            ipAddressBucketConfig,
+            loginIdBucketConfig
         );
     }
 

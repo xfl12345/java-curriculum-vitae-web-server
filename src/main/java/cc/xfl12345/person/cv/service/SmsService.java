@@ -11,7 +11,7 @@ public class SmsService {
     public boolean sendSmsValidationCode(String phoneNumber) {
 
 
-        return false;
+        return true;
     }
 
 }

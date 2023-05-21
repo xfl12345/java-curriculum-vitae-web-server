@@ -21,8 +21,8 @@ public class AnyUserRequestRateLimitHelper {
         @Nonnull String cacheNamePrefix,
         @Nonnull CacheManager cacheManager,
         @Nonnull RequestAnalyser requestAnalyser,
-        long ipAddressFrequencyInMinute,
-        long loginIdFrequencyInMinute) {
+        SimpleBucketConfig ipAddressBucketConfig,
+        SimpleBucketConfig loginIdBucketConfig) {
         String limitViaIpAddressCacheName = cacheNamePrefix + "LimitViaIpAddress";
         String limitViaLoginIdCacheName = cacheNamePrefix + "LimitViaLoginId";
 
@@ -30,12 +30,12 @@ public class AnyUserRequestRateLimitHelper {
 
         limitViaIpAddress = new RateLimitHelper(
             cacheManager.getCache(limitViaIpAddressCacheName),
-            ipAddressFrequencyInMinute
+            ipAddressBucketConfig
         );
 
         limitViaLoginId = new RateLimitHelper(
             cacheManager.getCache(limitViaLoginIdCacheName),
-            loginIdFrequencyInMinute
+            loginIdBucketConfig
         );
     }
 

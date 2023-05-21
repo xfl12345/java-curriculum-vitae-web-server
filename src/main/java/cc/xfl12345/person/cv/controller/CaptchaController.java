@@ -5,6 +5,7 @@ import cc.xfl12345.person.cv.appconst.JsonApiConst;
 import cc.xfl12345.person.cv.appconst.JsonApiResult;
 import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelper;
 import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelperFactory;
+import cc.xfl12345.person.cv.pojo.SimpleBucketConfigUtils;
 import cc.xfl12345.person.cv.pojo.request.SmsValidationCodeRequestData;
 import cc.xfl12345.person.cv.pojo.response.JsonApiResponseData;
 import cc.xfl12345.person.cv.service.SmsService;
@@ -63,8 +64,8 @@ public class CaptchaController {
     public void init() {
         pullSmsValidationCodeRateLimitHelper = rateLimitHelperFactory.generate(
             "pullSmsValidationCodeRate",
-            1,
-            1
+            SimpleBucketConfigUtils.createConfigJustInMinutes(1),
+            SimpleBucketConfigUtils.createConfigJustInMinutes(1)
         );
     }
 

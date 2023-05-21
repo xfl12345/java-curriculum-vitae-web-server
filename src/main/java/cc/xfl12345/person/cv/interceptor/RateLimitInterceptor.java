@@ -2,9 +2,7 @@ package cc.xfl12345.person.cv.interceptor;
 
 import cc.xfl12345.person.cv.appconst.DefaultSingleton;
 import cc.xfl12345.person.cv.appconst.JsonApiResult;
-import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelper;
-import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelperFactory;
-import cc.xfl12345.person.cv.pojo.FieldNotNullChecker;
+import cc.xfl12345.person.cv.pojo.*;
 import cc.xfl12345.person.cv.pojo.response.JsonApiResponseData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
@@ -50,14 +48,14 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
         captchaCheckRateHelper = anyUserRequestRateLimitHelperFactory.generate(
             "captchaCheckRate",
-            20,
-            30
+            SimpleBucketConfigUtils.createConfigJustInMinutes(20),
+            SimpleBucketConfigUtils.createConfigJustInMinutes(30)
         );
 
         captchaGenerateRateHelper = anyUserRequestRateLimitHelperFactory.generate(
             "captchaGenerateRate",
-            20,
-            30
+            SimpleBucketConfigUtils.createConfigJustInMinutes(20),
+            SimpleBucketConfigUtils.createConfigJustInMinutes(30)
         );
     }
 
