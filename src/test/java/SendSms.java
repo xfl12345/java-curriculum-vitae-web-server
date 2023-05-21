@@ -31,7 +31,7 @@ public class SendSms {
         //         properties.load(bufferedReader);
         //         System.out.println(objectMapper.valueToTree(properties).toPrettyString());
         //
-        //         String targetKeyPrefix = "app.alibaba.sms.";
+        //         String targetKeyPrefix = "app.sms.alibaba.";
         //         properties.entrySet().parallelStream().forEach(entry -> {
         //             String key = entry.getKey().toString();
         //             if (key.startsWith(targetKeyPrefix)) {

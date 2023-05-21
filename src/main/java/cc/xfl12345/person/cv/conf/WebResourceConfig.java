@@ -20,8 +20,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 @Configuration
-@ConditionalOnProperty(prefix = "app.web", name = "resource-location")
-@ConfigurationProperties(prefix = "app.web")
+@ConditionalOnProperty(prefix = "app.webui", name = "resource-location")
+@ConfigurationProperties(prefix = "app.webui")
 @Slf4j
 public class WebResourceConfig implements WebMvcConfigurer {
     @Getter
