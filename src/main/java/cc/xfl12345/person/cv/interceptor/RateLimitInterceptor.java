@@ -1,6 +1,7 @@
 package cc.xfl12345.person.cv.interceptor;
 
 import cc.xfl12345.person.cv.appconst.DefaultSingleton;
+import cc.xfl12345.person.cv.appconst.JsonApiConst;
 import cc.xfl12345.person.cv.appconst.JsonApiResult;
 import cc.xfl12345.person.cv.pojo.*;
 import cc.xfl12345.person.cv.pojo.response.JsonApiResponseData;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Slf4j
 @FieldNameConstants
@@ -77,17 +79,16 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         @Nonnull HttpServletResponse response,
         AnyUserRequestRateLimitHelper helper) throws IOException {
 
-        JsonApiResponseData responseData = helper.tryConsume(request);
+        RateLimitHelper.ConsumeResult consumeResult = helper.tryConsume(request);
 
-        if (responseData.getCode() == JsonApiResult.SUCCEED.getNum()) {
+        if (consumeResult.isSuccess()) {
             return true;
         } else {
-            if (responseData.getCode() == JsonApiResult.FAILED_FREQUENCY_MAX.getNum()) {
-                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            } else {
-                response.setStatus(HttpStatus.FORBIDDEN.value());
-            }
+            JsonApiResponseData responseData = new JsonApiResponseData(JsonApiConst.VERSION);
+            responseData.setApiResult(JsonApiResult.FAILED_FREQUENCY_MAX);
+            responseData.setData(Map.of(JsonApiConst.COOL_DOWN_REMAINDER_FIELD, consumeResult.getCoolDownRemainder()));
 
+            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             try (Writer writer = response.getWriter()) {

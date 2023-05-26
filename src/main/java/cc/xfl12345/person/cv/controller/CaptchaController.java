@@ -5,8 +5,9 @@ import cc.xfl12345.person.cv.appconst.JsonApiConst;
 import cc.xfl12345.person.cv.appconst.JsonApiResult;
 import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelper;
 import cc.xfl12345.person.cv.pojo.AnyUserRequestRateLimitHelperFactory;
+import cc.xfl12345.person.cv.pojo.RateLimitHelper;
 import cc.xfl12345.person.cv.pojo.SimpleBucketConfigUtils;
-import cc.xfl12345.person.cv.pojo.request.SmsValidationCodeRequestData;
+import cc.xfl12345.person.cv.pojo.request.SmsVerificationCodeRequestData;
 import cc.xfl12345.person.cv.pojo.response.JsonApiResponseData;
 import cc.xfl12345.person.cv.service.SmsService;
 import cloud.tianai.captcha.common.constant.CaptchaTypeConstant;
@@ -19,13 +20,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 
+@Slf4j
 @RestController
 @RequestMapping("captcha")
 public class CaptchaController {
@@ -86,33 +90,47 @@ public class CaptchaController {
 
         if (currentResult) {
             try {
-                SmsValidationCodeRequestData extraData = objectMapper.treeToValue(objectMapper.valueToTree(imageCaptchaTrack.getData()), SmsValidationCodeRequestData.class);
+                SmsVerificationCodeRequestData extraData = objectMapper.treeToValue(objectMapper.valueToTree(imageCaptchaTrack.getData()), SmsVerificationCodeRequestData.class);
                 if (extraData != null) {
                     String phoneNumber = extraData.data != null && extraData.data.phoneNumber != null ? extraData.data.phoneNumber : "";
                     String operation = extraData.operation != null ? extraData.operation : "";
-                    // 请求拉取短信验证码
-                    if (operation.equals("pull-sms-validation-code") && !"".equals(phoneNumber)) {
-                        JsonApiResponseData apiData = pullSmsValidationCodeRateLimitHelper.tryConsume(request);
-                        if (apiData.getCode() == JsonApiResult.SUCCEED.getNum()) {
-                            currentResult = smsService.sendSmsValidationCode(phoneNumber);
-                            responseData.setApiResult(currentResult ? JsonApiResult.SUCCEED : JsonApiResult.FAILED);
-                        } else {
-                            responseData = apiData;
-                        }
+                    if (operation.equals("")) {
+                        // 无其它动作
+                        responseData.setApiResult(JsonApiResult.SUCCEED);
                     } else {
-                        currentResult = false;
-                        responseData.setApiResult(JsonApiResult.FAILED_INVALID);
+                        // 请求拉取短信验证码
+                        if (operation.equals("pull-sms-verification-code") && !"".equals(phoneNumber)) {
+                            RateLimitHelper.ConsumeResult consumeResult = pullSmsValidationCodeRateLimitHelper.tryConsume(request);
+                            if (consumeResult.isSuccess()) {
+                                try {
+                                    currentResult = smsService.sendSmsValidationCode(phoneNumber);
+
+                                    responseData.setApiResult(currentResult ? JsonApiResult.SUCCEED : JsonApiResult.FAILED);
+                                    responseData.setData(Map.of(JsonApiConst.COOL_DOWN_REMAINDER_FIELD, consumeResult.getCoolDownRemainder()));
+                                } catch (IOException e) {
+                                    log.error(e.getMessage(), e.getCause());
+                                    responseData.setApiResult(JsonApiResult.OTHER_FAILED);
+                                }
+                            } else {
+                                responseData.setApiResult(JsonApiResult.FAILED_FREQUENCY_MAX);
+                                responseData.setData(Map.of(JsonApiConst.COOL_DOWN_REMAINDER_FIELD, consumeResult.getCoolDownRemainder()));
+                            }
+                        } else {
+                            // 不支持其它操作
+                            responseData.setApiResult(JsonApiResult.FAILED_NOT_SUPPORT);
+                        }
                     }
+
                 }
             } catch (JsonProcessingException e) {
-                currentResult = false;
+                // 负载数据格式错误
                 responseData.setApiResult(JsonApiResult.FAILED_REQUEST_FORMAT_ERROR);
             }
         } else {
+            // 人机验证不通过
             responseData.setApiResult(JsonApiResult.FAILED_FORBIDDEN);
         }
 
-        responseData.setData(Map.of("result", currentResult));
         return responseData;
     }
 

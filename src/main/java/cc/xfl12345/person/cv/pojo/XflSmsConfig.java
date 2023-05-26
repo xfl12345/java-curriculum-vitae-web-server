@@ -8,5 +8,9 @@ public class XflSmsConfig {
 
     private String signName;
 
+    private int verificationCodeLength;
+
+    private long expirationInMinute;
+
     private String template;
 }

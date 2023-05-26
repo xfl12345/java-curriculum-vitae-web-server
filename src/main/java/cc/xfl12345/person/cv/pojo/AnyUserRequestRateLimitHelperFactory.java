@@ -10,6 +10,14 @@ public class AnyUserRequestRateLimitHelperFactory {
 
     protected CacheManager cacheManager;
 
+    public RequestAnalyser getRequestAnalyser() {
+        return requestAnalyser;
+    }
+
+    public CacheManager getCacheManager() {
+        return cacheManager;
+    }
+
     public AnyUserRequestRateLimitHelperFactory(
         @Nonnull CacheManager cacheManager, @Nonnull RequestAnalyser requestAnalyser) {
 

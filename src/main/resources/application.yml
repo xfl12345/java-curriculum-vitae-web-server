@@ -102,3 +102,12 @@ sa-token:
     # 是否输出操作日志
     is-log: true
 
+
+app:
+    sms:
+        xfl12345:
+            access-key-secret: 'just-test_https://github.com/xfl12345/java-curriculum-vitae-server-web'
+            verification-code-length: 6
+            expiration-in-minute: 15
+            template: 您的验证码是 %s 。（共%s位，%s分钟内有效。工作人员不会向您索要验证码，切勿将验证码泄漏于他人，如非本人操作请忽略）
+

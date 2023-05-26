@@ -57,7 +57,7 @@ public class MeetHr implements cc.xfl12345.person.cv.pojo.OpenCloneable, Seriali
      */
     @javax.persistence.Column(name = "hr_phone_number", nullable = true)
     @io.swagger.annotations.ApiModelProperty("手机号")
-    private Long hrPhoneNumber;
+    private String hrPhoneNumber;
 
     /**
      * 面试官在公司职位

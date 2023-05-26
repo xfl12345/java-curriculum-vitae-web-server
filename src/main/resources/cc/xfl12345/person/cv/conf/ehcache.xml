@@ -71,4 +71,16 @@
         <heap unit="entries">1000000</heap>
     </cache>
 
+    <cache alias="loginRateLimitViaIpAddress">
+        <key-type>java.lang.String</key-type>
+        <value-type>io.github.bucket4j.Bucket</value-type>
+        <expiry>
+            <ttl unit="seconds">120</ttl>
+        </expiry>
+        <!--<heap-store-settings>-->
+        <!--    <max-object-size>1000000</max-object-size>-->
+        <!--</heap-store-settings>-->
+        <heap unit="entries">1000000</heap>
+    </cache>
+
 </config>

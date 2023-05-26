@@ -47,7 +47,7 @@ public class AnyUserRequestRateLimitHelper {
         }
     }
 
-    public JsonApiResponseData tryConsume(HttpServletRequest request) {
+    public RateLimitHelper.ConsumeResult tryConsume(HttpServletRequest request) {
         String loginId = getLoginId();
         if (loginId != null) {
             return limitViaLoginId.tryConsume(loginId);
