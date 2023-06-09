@@ -156,12 +156,12 @@ public class ClassPathResourceUtils {
             // 注册 JVM 关闭钩子。有始有终。
             FileSystem finalFileSystem = fileSystem;
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try{
+                try {
                     Class<?> fileSystemClass = finalFileSystem.getClass();
                     finalFileSystem.close();
-                    //do something
+                    // do something
                     System.out.println(String.format("FileSystem [%s] closed safety.", fileSystemClass.getCanonicalName()));
-                }catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }));

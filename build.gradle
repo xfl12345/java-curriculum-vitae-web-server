@@ -2,9 +2,9 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'java'
-    id 'org.springframework.boot' version '3.0.6'
+    id 'org.springframework.boot' version '3.1.0'
     id 'io.spring.dependency-management' version '1.1.0'
-    id 'org.graalvm.buildtools.native' version '0.9.20'
+    id 'org.graalvm.buildtools.native' version '0.9.22'
     id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
@@ -25,13 +25,13 @@ idea {
 java {
     compileJava.options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation' << '-Xdoclint:none'
     compileJava.options.encoding = 'UTF-8'
-    javadoc.options.addBooleanOption("Xdoclint:none", true)
     withSourcesJar()
     withJavadocJar()
 }
 
 javadoc {
     options.encoding = 'UTF-8'
+    options.addBooleanOption("Xdoclint:none", true)
 }
 
 // javafx {

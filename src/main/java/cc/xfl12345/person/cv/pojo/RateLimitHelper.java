@@ -38,6 +38,14 @@ public class RateLimitHelper {
         return obj;
     }
 
+    public void addTokens(String key) {
+        justGetCache(key, cache, () -> generateBucket(bucketConfig)).addTokens(1);
+    }
+
+    public boolean canConsume(String key) {
+        return justGetCache(key, cache, () -> generateBucket(bucketConfig)).getAvailableTokens() > 0;
+    }
+
     public ConsumeResult tryConsume(String key) {
         Bucket bucket = justGetCache(key, cache, () -> generateBucket(bucketConfig));
         ConsumeResult consumeResult = new ConsumeResult();

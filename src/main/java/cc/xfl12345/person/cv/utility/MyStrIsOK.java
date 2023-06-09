@@ -32,10 +32,7 @@ public class MyStrIsOK {
     public static final Pattern containNum = Pattern.compile("\\d");
     public static final Pattern containLetterAndDigit = Pattern.compile("[a-zA-Z0-9]");
 
-    /**
-     * 匹配如下特殊符号
-     * ( ) ` ~ ! @ # $ % ^ & * - _ + = | { } [ ] : ; ' < > , . ? /
-     */
+    // 匹配特殊符号 ( ) ` ~ ! @ # $ % ^ & * - _ + = | { } [ ] : ; ' < > , . ? /
     public static final Pattern containAllowedSpecialCharacter = Pattern.compile("[`~!@#$%^&*()+=|{}':;,\\[\\].\\\\<>/?—]");
     public static final Pattern containChineseInUTF8 = Pattern.compile("[\u4e00-\u9fa5]");
 

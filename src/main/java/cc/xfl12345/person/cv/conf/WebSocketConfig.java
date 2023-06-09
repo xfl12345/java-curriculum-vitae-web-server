@@ -1,7 +1,7 @@
 package cc.xfl12345.person.cv.conf;
 
 import cc.xfl12345.person.cv.interceptor.WebSocketInterceptor;
-import cc.xfl12345.person.cv.service.SmsService;
+import cc.xfl12345.person.cv.service.SMS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -16,11 +16,11 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
 
-    public SmsService smsService;
+    public SMS SMS;
 
     @Autowired
-    public void setSmsService(SmsService smsService) {
-        this.smsService = smsService;
+    public void setSmsService(SMS SMS) {
+        this.SMS = SMS;
     }
 
     // 注册 WebSocket 处理器
@@ -28,7 +28,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry webSocketHandlerRegistry) {
         webSocketHandlerRegistry
             // WebSocket 连接处理器
-            .addHandler(smsService, "/sms/ws-connect")
+            .addHandler(SMS, "/sms/ws-connect")
             // WebSocket 拦截器
             .addInterceptors(new WebSocketInterceptor())
             .setAllowedOrigins("*");

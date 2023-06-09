@@ -135,8 +135,7 @@ public class MyDatabaseInitializer {
             connection.commit();
             log.info("Database initiated!");
         } catch (SQLException | IOException exception) {
-            log.error("Database initiation failed.");
-            log.error(exception.getMessage());
+            log.error("Database initiation failed due to ", exception);
             throw exception;
         } finally {
             connection.close();

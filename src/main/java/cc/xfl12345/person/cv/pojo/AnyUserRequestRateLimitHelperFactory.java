@@ -27,12 +27,12 @@ public class AnyUserRequestRateLimitHelperFactory {
     }
 
     public AnyUserRequestRateLimitHelper generate(
-        String cacheNamePrefix,
+        String cacheNamSuffix,
         SimpleBucketConfig ipAddressBucketConfig,
         SimpleBucketConfig loginIdBucketConfig) {
 
         return new AnyUserRequestRateLimitHelper(
-            cacheNamePrefix,
+            cacheNamSuffix,
             cacheManager,
             requestAnalyser,
             ipAddressBucketConfig,

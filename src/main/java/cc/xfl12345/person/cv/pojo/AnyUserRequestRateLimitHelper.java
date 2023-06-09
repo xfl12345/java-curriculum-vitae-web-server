@@ -1,6 +1,5 @@
 package cc.xfl12345.person.cv.pojo;
 
-import cc.xfl12345.person.cv.pojo.response.JsonApiResponseData;
 import cn.dev33.satoken.stp.StpUtil;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,13 +17,13 @@ public class AnyUserRequestRateLimitHelper {
     protected RateLimitHelper limitViaLoginId;
 
     public AnyUserRequestRateLimitHelper(
-        @Nonnull String cacheNamePrefix,
+        @Nonnull String cacheNameSuffix,
         @Nonnull CacheManager cacheManager,
         @Nonnull RequestAnalyser requestAnalyser,
         SimpleBucketConfig ipAddressBucketConfig,
         SimpleBucketConfig loginIdBucketConfig) {
-        String limitViaIpAddressCacheName = cacheNamePrefix + "LimitViaIpAddress";
-        String limitViaLoginIdCacheName = cacheNamePrefix + "LimitViaLoginId";
+        String limitViaIpAddressCacheName = "RateLimitViaIpAddress4" + cacheNameSuffix;
+        String limitViaLoginIdCacheName = "RateLimitViaLoginId4" + cacheNameSuffix;
 
         this.requestAnalyser = requestAnalyser;
 
@@ -46,6 +45,25 @@ public class AnyUserRequestRateLimitHelper {
             return null;
         }
     }
+
+    public void addTokens(HttpServletRequest request) {
+        String loginId = getLoginId();
+        if (loginId != null) {
+            limitViaLoginId.addTokens(loginId);
+        } else {
+            limitViaIpAddress.addTokens(requestAnalyser.getIpAddress(request));
+        }
+    }
+
+    public boolean canConsume(HttpServletRequest request) {
+        String loginId = getLoginId();
+        if (loginId != null) {
+            return limitViaLoginId.canConsume(loginId);
+        } else {
+            return limitViaIpAddress.canConsume(requestAnalyser.getIpAddress(request));
+        }
+    }
+
 
     public RateLimitHelper.ConsumeResult tryConsume(HttpServletRequest request) {
         String loginId = getLoginId();

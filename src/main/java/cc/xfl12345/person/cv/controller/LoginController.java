@@ -6,11 +6,14 @@ import cc.xfl12345.person.cv.appconst.JsonApiConst;
 import cc.xfl12345.person.cv.appconst.JsonApiResult;
 import cc.xfl12345.person.cv.pojo.RateLimitHelper;
 import cc.xfl12345.person.cv.pojo.RequestAnalyser;
-import cc.xfl12345.person.cv.pojo.SimpleBucketConfigUtils;
+import cc.xfl12345.person.cv.pojo.SimpleBucketConfig;
+import cc.xfl12345.person.cv.pojo.database.MeetHr;
 import cc.xfl12345.person.cv.pojo.response.JsonApiResponseData;
-import cc.xfl12345.person.cv.service.SmsService;
+import cc.xfl12345.person.cv.service.SMS;
 import cc.xfl12345.person.cv.service.UserService;
+import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.cache.CacheManager;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
@@ -46,7 +51,7 @@ public class LoginController {
 
     protected RequestAnalyser requestAnalyser;
 
-    protected SmsService smsService;
+    protected SMS SMS;
 
     protected UserService userService;
 
@@ -62,8 +67,8 @@ public class LoginController {
     }
 
     @Autowired
-    public void setSmsService(SmsService smsService) {
-        this.smsService = smsService;
+    public void setSmsService(SMS SMS) {
+        this.SMS = SMS;
     }
 
     @Autowired
@@ -82,11 +87,12 @@ public class LoginController {
         adminPhoneNumber = Objects.requireNonNull(springAppEnv.getProperty("app.webui.admin.phone-number"));
         adminPassword = Objects.requireNonNull(springAppEnv.getProperty("app.webui.admin.password"));
         smsWebSocketAccessKeySecret = Objects.requireNonNull(springAppEnv.getProperty("app.sms.xfl12345.access-key-secret"));
+        cacheManager.getCacheNames().forEach(cacheName -> cacheManager.getCache(cacheName).clear());
 
         verificationCodeLimitLength = (adminPassword.length() * (int) (Math.ceil(random.nextDouble(2, 5))));
         loginRateLimitHelper = new RateLimitHelper(
-            cacheManager.getCache("loginRateLimitViaIpAddress"),
-            SimpleBucketConfigUtils.createConfigJustInMinutes(12)
+            cacheManager.getCache("RateLimitViaIpAddress4Login"),
+            SimpleBucketConfig.builder().bucketCapacity(5).refillToken(1).refillFrequency(Duration.ofMinutes(1)).build()
         );
     }
 
@@ -120,30 +126,44 @@ public class LoginController {
         return verificationCodeLimitLength;
     }
 
+    protected void login(String loginId, boolean rememberMe) {
+        if (rememberMe) {
+            StpUtil.login(loginId, new SaLoginModel()
+                .setIsWriteHeader(true)
+                .setIsLastingCookie(true)
+                .setTimeout(60 * 60 * 24 * 365)
+            );
+        } else {
+            StpUtil.login(loginId);
+        }
+    }
+
     @PostMapping("login")
-    public JsonApiResponseData login(HttpServletRequest request, String phoneNumber, String verificationCode) {
+    public JsonApiResponseData login(HttpServletRequest request, String phoneNumber, String verificationCode, @Nullable Boolean rememberMe) {
+        Date date = new Date();
         JsonApiResponseData responseData = new JsonApiResponseData(JsonApiConst.VERSION);
         if (!StpUtil.isLogin()) {
             log.info("phoneNumber:[%s], verificationCode:[%s]".formatted(phoneNumber, verificationCode));
             RateLimitHelper.ConsumeResult consumeResult = loginRateLimitHelper.tryConsume(requestAnalyser.getIpAddress(request));
             if (consumeResult.isSuccess()) {
+                responseData.setApiResult(JsonApiResult.FAILED);
                 if (phoneNumber.equals(adminPhoneNumber)) {
-                    if (checkPassword(adminPassword, verificationCode)) {
-                        StpUtil.login("admin");
+                    String password = SMS.getSmsValidationCodeCache().get(phoneNumber);
+                    // 管理员账户 支持特权密码登录，也支持动态短信验证码登录
+                    if (checkPassword(adminPassword, verificationCode) || (password != null && checkPassword(password, verificationCode))) {
+                        login(AppConst.XFL_WEBUI_ADMIN_LOGIN_ID, rememberMe == null || rememberMe);
                         responseData.setApiResult(JsonApiResult.SUCCEED);
                         responseData.setData(Map.of(JsonApiConst.LOGIN_TOKEN_FIELD, StpUtil.getTokenValue()));
-                    } else {
-                        responseData.setApiResult(JsonApiResult.FAILED);
                     }
                 } else {
-                    String password = smsService.getSmsValidationCodeCache().get(phoneNumber);
+                    String password = SMS.getSmsValidationCodeCache().get(phoneNumber);
                     if (password != null && checkPassword(password, verificationCode)) {
-                        Long hrId = userService.getHrId(phoneNumber);
-                        StpUtil.login(hrId.toString());
-                        responseData.setApiResult(JsonApiResult.SUCCEED);
-                        responseData.setData(Map.of(JsonApiConst.LOGIN_TOKEN_FIELD, StpUtil.getTokenValue()));
-                    } else {
-                        responseData.setApiResult(JsonApiResult.FAILED);
+                        MeetHr meetHr = userService.getHrInfoAndUpdateVisitTime(phoneNumber, date);
+                        if (meetHr != null) {
+                            login(meetHr.getId().toString(), rememberMe == null || rememberMe);
+                            responseData.setApiResult(JsonApiResult.SUCCEED);
+                            responseData.setData(Map.of(JsonApiConst.LOGIN_TOKEN_FIELD, StpUtil.getTokenValue()));
+                        }
                     }
                 }
             } else {
@@ -151,7 +171,23 @@ public class LoginController {
                 responseData.setData(Map.of(JsonApiConst.COOL_DOWN_REMAINDER_FIELD, consumeResult.getCoolDownRemainder()));
             }
         } else {
-            responseData.setApiResult(JsonApiResult.FAILED_ALREADY_LOGIN);
+            if (AppConst.XFL_WEBUI_ADMIN_LOGIN_ID.equals(StpUtil.getLoginId().toString())) {
+                responseData.setApiResult(JsonApiResult.SUCCEED);
+            } else {
+                MeetHr meetHr = userService.getHrInfoAndUpdateVisitTime(phoneNumber, date);
+                if (meetHr != null) {
+                    String targetLoginId = meetHr.getId().toString();
+                    String loginId = StpUtil.getLoginId().toString();
+                    if (targetLoginId.equals(loginId)) {
+                        responseData.setApiResult(JsonApiResult.SUCCEED);
+                    } else {
+                        responseData.setApiResult(JsonApiResult.FAILED_LOGOUT_IS_NEEDED_BEFORE_LOGIN);
+                    }
+                } else {
+                    StpUtil.logout();
+                    responseData.setApiResult(JsonApiResult.FAILED_FORBIDDEN_ACCOUNT);
+                }
+            }
         }
 
         return responseData;
@@ -169,16 +205,15 @@ public class LoginController {
 
     @RequestMapping(path = "kickout", method = {RequestMethod.GET, RequestMethod.POST})
     public boolean kickout(String loginId) {
-        if (StpUtil.isLogin() && "admin".equals(StpUtil.getLoginId())) {
-            try {
-                String token = StpUtil.getTokenValueByLoginId(loginId);
-                if (token != null) {
-                    StpUtil.logout(loginId);
-                    return true;
-                } else {
-                    return false;
+        if (StpUtil.isLogin() && AppConst.XFL_WEBUI_ADMIN_LOGIN_ID.equals(StpUtil.getLoginId().toString())) {
+            String token = StpUtil.getTokenValueByLoginId(loginId);
+            if (token != null) {
+                if (AppConst.XFL_SMS_WEB_SOCKET_SERIVE_LOGIN_ID.equals(loginId)) {
+                    SMS.closeSessionByLoginId(loginId);
                 }
-            } catch (Exception e) {
+                StpUtil.logout(loginId);
+                return true;
+            } else {
                 return false;
             }
         } else {
@@ -191,25 +226,32 @@ public class LoginController {
         return StpUtil.isLogin();
     }
 
-    @PostMapping("sms-server-login")
+    @PostMapping("sms/ws-login")
     public JsonApiResponseData smsServerWebSocketLogin(HttpServletRequest request, String accessKeySecret) {
         JsonApiResponseData responseData = new JsonApiResponseData(JsonApiConst.VERSION);
         RateLimitHelper.ConsumeResult consumeResult = loginRateLimitHelper.tryConsume(requestAnalyser.getIpAddress(request));
+        // 不管有无设置临时过期，都不允许有临时过期问题
+        StpUtil.updateLastActivityToNow();
         if (consumeResult.isSuccess()) {
             if (checkPassword(smsWebSocketAccessKeySecret, accessKeySecret)) {
                 if (StpUtil.isLogin()) {
-                    Object historyLoginId = StpUtil.getLoginIdByToken(StpUtil.getTokenValue());
-                    if (historyLoginId != null && historyLoginId.equals(AppConst.XFL_SMS_WEB_SOCKET_SERIVE_LOGIN_ID)) {
+                    if (AppConst.XFL_SMS_WEB_SOCKET_SERIVE_LOGIN_ID.equals(StpUtil.getLoginId())) {
                         responseData.setApiResult(JsonApiResult.SUCCEED);
                     } else {
-                        responseData.setApiResult(JsonApiResult.FAILED_ALREADY_LOGIN);
+                        responseData.setApiResult(JsonApiResult.FAILED_LOGOUT_IS_NEEDED_BEFORE_LOGIN);
                     }
-                } else {
-                    StpUtil.login(AppConst.XFL_SMS_WEB_SOCKET_SERIVE_LOGIN_ID);
-                    responseData.setApiResult(JsonApiResult.SUCCEED);
-                }
 
-                responseData.setData(Map.of(JsonApiConst.LOGIN_TOKEN_FIELD, StpUtil.getTokenValue()));
+                    responseData.setData(Map.of(JsonApiConst.LOGIN_TOKEN_FIELD, StpUtil.getTokenValue()));
+                } else {
+                    Object historyToken = StpUtil.getTokenValueByLoginId(AppConst.XFL_SMS_WEB_SOCKET_SERIVE_LOGIN_ID);
+                    if (historyToken != null) {
+                        responseData.setApiResult(JsonApiResult.FAILED_ALREADY_LOGIN_BY_OTHER);
+                    } else {
+                        login(AppConst.XFL_SMS_WEB_SOCKET_SERIVE_LOGIN_ID, true);
+                        responseData.setApiResult(JsonApiResult.SUCCEED);
+                        responseData.setData(Map.of(JsonApiConst.LOGIN_TOKEN_FIELD, StpUtil.getTokenValue()));
+                    }
+                }
             } else {
                 responseData.setApiResult(JsonApiResult.FAILED);
             }

@@ -49,13 +49,13 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         fieldNotNullChecker.check(anyUserRequestRateLimitHelperFactory, Fields.anyUserRequestRateLimitHelperFactory);
 
         captchaCheckRateHelper = anyUserRequestRateLimitHelperFactory.generate(
-            "captchaCheckRate",
+            "CaptchaCheck",
             SimpleBucketConfigUtils.createConfigJustInMinutes(20),
             SimpleBucketConfigUtils.createConfigJustInMinutes(30)
         );
 
         captchaGenerateRateHelper = anyUserRequestRateLimitHelperFactory.generate(
-            "captchaGenerateRate",
+            "CaptchaGenerate",
             SimpleBucketConfigUtils.createConfigJustInMinutes(20),
             SimpleBucketConfigUtils.createConfigJustInMinutes(30)
         );

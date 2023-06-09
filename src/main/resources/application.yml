@@ -92,7 +92,7 @@ sa-token:
     # token有效期，单位s 默认30天, -1代表永不过期
     timeout: 2592000
     # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
-    activity-timeout: 600
+    activity-timeout: -1
     # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
     is-concurrent: false
     # 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token)
@@ -107,7 +107,7 @@ app:
     sms:
         xfl12345:
             access-key-secret: 'just-test_https://github.com/xfl12345/java-curriculum-vitae-server-web'
-            verification-code-length: 6
+            validation-code-length: 6
             expiration-in-minute: 15
-            template: 您的验证码是 %s 。（共%s位，%s分钟内有效。工作人员不会向您索要验证码，切勿将验证码泄漏于他人，如非本人操作请忽略）
+            template: 您的验证码是 %s 。（共%s位，%s分钟内有效。切勿将验证码泄漏于他人，如非本人操作请忽略）
 

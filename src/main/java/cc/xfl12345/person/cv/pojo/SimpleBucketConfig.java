@@ -13,10 +13,13 @@ import java.time.Duration;
 @AllArgsConstructor
 public class SimpleBucketConfig {
 
+    @Builder.Default
     protected long refillToken = 1;
 
+    @Builder.Default
     protected Duration refillFrequency = Duration.ofMinutes(1);
 
+    @Builder.Default
     protected long bucketCapacity = 10;
 
 }
