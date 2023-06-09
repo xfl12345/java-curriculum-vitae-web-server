@@ -12,10 +12,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE meet_hr
 (
-    `id`                 bigint NOT NULL PRIMARY KEY AUTO_INCREMENT comment 'ID',
-    `create_time`        datetime        DEFAULT CURRENT_TIMESTAMP comment '创建时间',
-    `first_visit_time`   datetime    DEFAULT NULL comment '首次访问时间',
-    `last_visit_time`    datetime    DEFAULT NULL comment '上次访问时间',
+    `id`                 bigint PRIMARY KEY AUTO_INCREMENT NOT NULL comment 'ID',
+    `create_time`        datetime DEFAULT CURRENT_TIMESTAMP comment '创建时间',
+    `first_visit_time`   datetime DEFAULT NULL comment '首次访问时间',
+    `last_visit_time`    datetime DEFAULT NULL comment '上次访问时间',
     `hr_name`            char(32) DEFAULT NULL comment '面试官姓名',
     `hr_phone_number`    char(24) DEFAULT NULL comment '手机号',
     `hr_job`             char(16) DEFAULT NULL comment '面试官在公司职位',
