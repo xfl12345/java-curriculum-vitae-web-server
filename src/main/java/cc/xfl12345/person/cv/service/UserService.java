@@ -67,7 +67,7 @@ public class UserService {
             SuidRich suid = BeeFactoryHelper.getSuidRich();
             meetHr = suid.selectFirst(
                 new MeetHr(),
-                new ConditionImpl().opOn(MeetHr.Fields.hrPhoneNumber, Op.eq, phoneNumber)
+                new ConditionImpl().op(MeetHr.Fields.hrPhoneNumber, Op.eq, phoneNumber)
             );
             if (meetHr != null) {
                 if (meetHr.getFirstVisitTime() == null) {
@@ -87,7 +87,7 @@ public class UserService {
 
     public boolean justUpdateVisitTimeByPhoneNumber(String phoneNumber, Date visitTime) {
         return justUpdateVisitTimeByCondition(new ConditionImpl()
-            .opOn(MeetHr.Fields.hrPhoneNumber, Op.eq, phoneNumber)
+            .op(MeetHr.Fields.hrPhoneNumber, Op.eq, phoneNumber)
             .selectField(
                 MeetHr.Fields.id,
                 MeetHr.Fields.hrPhoneNumber,
@@ -98,7 +98,7 @@ public class UserService {
 
     public boolean justUpdateVisitTimeById(Long id, Date visitTime) {
         return justUpdateVisitTimeByCondition(new ConditionImpl()
-            .opOn(MeetHr.Fields.id, Op.eq, id)
+            .op(MeetHr.Fields.id, Op.eq, id)
             .selectField(
                 MeetHr.Fields.id,
                 MeetHr.Fields.hrPhoneNumber,
