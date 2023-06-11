@@ -51,18 +51,23 @@ public class WebResourceConfig implements WebMvcConfigurer {
         Resource resource = resourceLocation.startsWith("./") ? new FileSystemResource(resourceLocation) : resourcePatternResolver.getResource(resourceLocation);
         // 如果拦截的是根路径，需要遍历路径下所有文件（因为会导致其它路径无法访问）。
         if ("/**".equals(pathPattern) || "/".equals(pathPattern)) {
-            String resourceLocationPattern = resourceLocation + "**";
-            Resource[] resources = resourcePatternResolver.getResources(resourceLocationPattern);
-            List<String> pathPatternList = new ArrayList<>(resources.length);
-            for (Resource item : resources) {
-                String currentPathPattern = pathMatcher.extractPathWithinPattern(resourceLocationPattern, item.getURL().toString());
-                if (currentPathPattern.length() == 0 || currentPathPattern.charAt(0) != '/') {
-                    currentPathPattern = "/" + currentPathPattern;
+            FileSystemResource fileSystemResource = new FileSystemResource(resourceLocation);
+            if (fileSystemResource.exists()) {
+                String resourceLocationPattern = fileSystemResource.getURL() + "**";
+                Resource[] resources = resourcePatternResolver.getResources(resourceLocationPattern);
+                List<String> pathPatternList = new ArrayList<>(resources.length);
+                for (Resource item : resources) {
+                    String currentPathPattern = pathMatcher.extractPathWithinPattern(resourceLocationPattern, item.getURL().toString());
+                    if (currentPathPattern.length() == 0 || currentPathPattern.charAt(0) != '/') {
+                        currentPathPattern = "/" + currentPathPattern;
+                    }
+                    pathPatternList.add(currentPathPattern);
                 }
-                pathPatternList.add(currentPathPattern);
-            }
 
-            justMapResource(registry, pathPatternList, resource);
+                justMapResource(registry, pathPatternList, resource);
+            } else {
+                log.info(String.format("Skip mapping request: [%s] <---> [%s], resource type=[%s]. Because of the resource do not exist!", pathPattern, resource.getURL(), resource.getClass().getCanonicalName()));
+            }
         } else {
             justMapResource(registry, pathPattern, resource);
         }
