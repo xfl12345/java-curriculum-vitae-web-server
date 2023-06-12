@@ -34,6 +34,7 @@ import javax.cache.configuration.Configuration;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -133,6 +134,20 @@ public class SMS extends TextWebSocketHandler {
         }
     }
 
+
+    public boolean justAddValidationCode2Cache(String phoneNumber, String code) {
+        smsValidationCodeCache.put(phoneNumber, code);
+
+        return true;
+    }
+
+    public String justGetValidationCodeAndPutIntoCache(String phoneNumber) {
+        String code = generateValidationCode();
+        smsValidationCodeCache.put(phoneNumber, code);
+
+        return code;
+    }
+
     public String generateValidationCode(int codeLength) {
         StringBuilder verificationCodeBuffer = new StringBuilder(codeLength);
         Random random = new Random(System.currentTimeMillis());
@@ -171,10 +186,14 @@ public class SMS extends TextWebSocketHandler {
         return verificationCodeBuffer.toString();
     }
 
+    public String generateValidationCode() {
+        return generateValidationCode(xflSmsConfig.getValidationCodeLength());
+    }
+
     public SendValidationCodeResult sendValidationCode(String phoneNumber) {
         Iterator<WebSocketSession> iterator = webSocketSessionMaps.values().iterator();
         if (iterator.hasNext()) {
-            String code = generateValidationCode(xflSmsConfig.getValidationCodeLength());
+            String code = generateValidationCode();
 
             SmsTask smsTask = new SmsTask();
             smsTask.setCreateTime(ZonedDateTime.now(TimeZone.getDefault().toZoneId()).format(DateTimeFormatter.ISO_INSTANT));
@@ -210,7 +229,7 @@ public class SMS extends TextWebSocketHandler {
     }
 
     public JsonApiResponseData sendValidationCode(HttpServletRequest request, PhoneNumberData phoneNumberData) {
-        Date date = new Date();
+        LocalDateTime date = LocalDateTime.now();
         JsonApiResponseData responseDataPayload = new JsonApiResponseData(JsonApiConst.VERSION, JsonApiResult.FAILED_NOT_SUPPORT);
         if (phoneNumberData.phoneNumber != null) {
             String phoneNumber = phoneNumberData.phoneNumber;

@@ -1,7 +1,7 @@
 package cc.xfl12345.person.cv.pojo.database;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * 表名：meet_hr
@@ -29,21 +29,21 @@ public class MeetHr implements cc.xfl12345.person.cv.pojo.OpenCloneable, Seriali
      */
     @javax.persistence.Column(name = "create_time", nullable = true)
     @io.swagger.annotations.ApiModelProperty("创建时间")
-    private Date createTime;
+    private LocalDateTime createTime;
 
     /**
      * 首次访问时间
      */
     @javax.persistence.Column(name = "first_visit_time", nullable = true)
     @io.swagger.annotations.ApiModelProperty("首次访问时间")
-    private Date firstVisitTime;
+    private LocalDateTime firstVisitTime;
 
     /**
      * 上次访问时间
      */
     @javax.persistence.Column(name = "last_visit_time", nullable = true)
     @io.swagger.annotations.ApiModelProperty("上次访问时间")
-    private Date lastVisitTime;
+    private LocalDateTime lastVisitTime;
 
     /**
      * 面试官姓名

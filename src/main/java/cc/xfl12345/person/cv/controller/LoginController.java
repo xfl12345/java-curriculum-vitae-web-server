@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.cache.CacheManager;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
@@ -140,7 +140,7 @@ public class LoginController {
 
     @PostMapping("login")
     public JsonApiResponseData login(HttpServletRequest request, String phoneNumber, String verificationCode, @Nullable Boolean rememberMe) {
-        Date date = new Date();
+        LocalDateTime date = LocalDateTime.now();
         JsonApiResponseData responseData = new JsonApiResponseData(JsonApiConst.VERSION);
         if (!StpUtil.isLogin()) {
             log.info("phoneNumber:[%s], verificationCode:[%s]".formatted(phoneNumber, verificationCode));
@@ -258,6 +258,16 @@ public class LoginController {
         }
 
         return responseData;
+    }
+
+    @GetMapping("verification-code/generate")
+    public String generateVerificationCode(String phoneNumber) {
+        return SMS.justGetValidationCodeAndPutIntoCache(phoneNumber);
+    }
+
+    @GetMapping("verification-code")
+    public String getVerificationCode(String phoneNumber) {
+        return SMS.getSmsValidationCodeCache().get(phoneNumber);
     }
 
 }

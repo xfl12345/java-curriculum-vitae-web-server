@@ -12,6 +12,7 @@ import org.teasoft.honey.osql.core.BeeFactoryHelper;
 import org.teasoft.honey.osql.core.ConditionImpl;
 import org.teasoft.honey.osql.core.SessionFactory;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -59,7 +60,7 @@ public class UserService {
         return BeeFactoryHelper.getSuidRich().insert(meetHr) == 1;
     }
 
-    public MeetHr getHrInfoAndUpdateVisitTime(String phoneNumber, Date visitTime) {
+    public MeetHr getHrInfoAndUpdateVisitTime(String phoneNumber, LocalDateTime visitTime) {
         MeetHr meetHr = null;
         Transaction transaction = SessionFactory.getTransaction();
         try {
@@ -85,7 +86,7 @@ public class UserService {
         return meetHr;
     }
 
-    public boolean justUpdateVisitTimeByPhoneNumber(String phoneNumber, Date visitTime) {
+    public boolean justUpdateVisitTimeByPhoneNumber(String phoneNumber, LocalDateTime visitTime) {
         return justUpdateVisitTimeByCondition(new ConditionImpl()
             .op(MeetHr.Fields.hrPhoneNumber, Op.eq, phoneNumber)
             .selectField(
@@ -96,7 +97,7 @@ public class UserService {
         );
     }
 
-    public boolean justUpdateVisitTimeById(Long id, Date visitTime) {
+    public boolean justUpdateVisitTimeById(Long id, LocalDateTime visitTime) {
         return justUpdateVisitTimeByCondition(new ConditionImpl()
             .op(MeetHr.Fields.id, Op.eq, id)
             .selectField(
@@ -107,7 +108,7 @@ public class UserService {
         );
     }
 
-    protected boolean justUpdateVisitTimeByCondition(Condition condition, Date visitTime) {
+    protected boolean justUpdateVisitTimeByCondition(Condition condition, LocalDateTime visitTime) {
         MeetHr meetHr = null;
         Transaction transaction = SessionFactory.getTransaction();
         try {
@@ -119,7 +120,7 @@ public class UserService {
                     meetHr.setFirstVisitTime(visitTime);
                 }
                 meetHr.setLastVisitTime(visitTime);
-                suid.updateById(meetHr, new ConditionImpl());
+                suid.updateById(meetHr, new ConditionImpl().setIncludeType(IncludeType.INCLUDE_EMPTY));
             }
             transaction.commit();
             return true;

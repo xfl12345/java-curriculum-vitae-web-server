@@ -52,12 +52,12 @@ public class UserDataController {
     }
 
     @PutMapping("by-id")
-    public boolean updateHrInfoById(MeetHr meetHr) {
+    public boolean updateHrInfoById(@RequestBody MeetHr meetHr) {
         return userService.updateHrInfoById(meetHr);
     }
 
     @PutMapping("")
-    public boolean addHrInfo(MeetHr meetHr) {
+    public boolean addHrInfo(@RequestBody MeetHr meetHr) {
         return userService.addHrInfo(meetHr);
     }
 

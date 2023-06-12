@@ -27,7 +27,10 @@ spring:
         time-zone: Asia/Hong_Kong
         default-property-inclusion: non_null
         serialization:
+            write-dates-as-timestamps: false
             write-date-keys-as-timestamps: false
+        date-format: com.fasterxml.jackson.databind.util.StdDateFormat
+
     servlet:
         multipart:
             max-file-size: -1
@@ -36,6 +39,9 @@ spring:
             preferred-json-mapper: jackson
         contentnegotiation:
             favor-parameter: true
+        format:
+            date: iso
+            date-time: iso
     data:
         rest:
             default-media-type: application/json

@@ -54,7 +54,7 @@ public class CaptchaController {
 
     @GetMapping("generate")
     @ResponseBody
-    public CaptchaResponse<ImageCaptchaVO> genCaptcha(@RequestParam(value = "type", required = false)String type) {
+    public CaptchaResponse<ImageCaptchaVO> genCaptcha(@RequestParam(value = "type", required = false) String type) {
         if (StringUtils.isBlank(type)) {
             type = CaptchaTypeConstant.SLIDER;
         }
@@ -99,6 +99,7 @@ public class CaptchaController {
 
     /**
      * 二次验证，一般用于机器内部调用，这里为了方便测试
+     *
      * @param id id
      * @return boolean
      */

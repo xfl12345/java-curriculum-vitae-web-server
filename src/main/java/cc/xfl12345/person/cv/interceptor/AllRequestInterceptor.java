@@ -14,6 +14,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Slf4j
@@ -38,7 +40,7 @@ public class AllRequestInterceptor implements HandlerInterceptor {
         if (StpUtil.isLogin()) {
             String loginId = StpUtil.getLoginId().toString();
             if (!(AppConst.XFL_WEBUI_ADMIN_LOGIN_ID.equals(loginId) || AppConst.XFL_SMS_WEB_SOCKET_SERIVE_LOGIN_ID.equals(loginId))) {
-                userService.justUpdateVisitTimeById(Long.parseLong(StpUtil.getLoginId().toString()), new Date());
+                userService.justUpdateVisitTimeById(Long.parseLong(StpUtil.getLoginId().toString()), LocalDateTime.now());
             }
         }
 

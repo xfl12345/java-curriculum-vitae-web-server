@@ -1,23 +1,20 @@
 package cc.xfl12345.person.cv.controller;
 
+import cc.xfl12345.person.cv.Main;
 import cc.xfl12345.person.cv.appconst.ControllerConst;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.support.RequestContextUtils;
-
-import jakarta.servlet.http.HttpServletRequest;
-import cc.xfl12345.person.cv.Main;
 
 @DependsOn(ControllerConst.dependsOnBean)
 @RestController
 @RequestMapping("app")
 public class ApplicationController {
     @GetMapping("shutdown")
-    @ResponseBody
     public boolean shutdown(HttpServletRequest request, boolean confirm) {
         WebApplicationContext context = RequestContextUtils.findWebApplicationContext(request);
         if (confirm && context != null) {
@@ -40,7 +37,6 @@ public class ApplicationController {
     }
 
     @GetMapping("context/reboot")
-    @ResponseBody
     public boolean reboot(boolean confirm) {
         if (confirm) {
             // 三秒后执行任务

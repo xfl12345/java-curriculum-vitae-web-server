@@ -67,11 +67,11 @@ public class WebMvcInterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(applicationContext.getBean(AllRequestInterceptor.class)).addPathPatterns("/**");
         // 注册 访问频率限制 拦截器 （防止人机验证被爆）
         registry.addInterceptor(applicationContext.getBean(RateLimitInterceptor.class)).addPathPatterns("/**");
+        // 管理员级别权限拦截
+        registry.addInterceptor(applicationContext.getBean("adminAuthInterceptor", AdminAuthInterceptor.class))
+            .addPathPatterns("/app/**", "/db/**", "/verification-code", "/verification-code/**");
         // 注册 隐私数据 拦截器 （要求用户登录）
         registry.addInterceptor(applicationContext.getBean("authInterceptor", AuthInterceptor.class)).addPathPatterns("/static/secret/**");
-        // 管理员级别权限拦截
-        registry.addInterceptor(applicationContext.getBean(AdminAuthInterceptor.class)).addPathPatterns("/app/**");
-        registry.addInterceptor(applicationContext.getBean(AdminAuthInterceptor.class)).addPathPatterns("/db/**");
     }
 
 
