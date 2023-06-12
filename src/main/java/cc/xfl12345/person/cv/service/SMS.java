@@ -68,6 +68,11 @@ public class SMS extends TextWebSocketHandler {
 
     private AnyUserRequestRateLimitHelper pullSmsValidationCodeRateLimitHelper = null;
 
+    /**
+     * 存放Session集合，方便推送消息
+     */
+    protected Map<String, WebSocketSession> webSocketSessionMaps = new ConcurrentHashMap<>();
+
     @Autowired
     public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -96,6 +101,10 @@ public class SMS extends TextWebSocketHandler {
     @Autowired
     public void setRateLimitHelperFactory(AnyUserRequestRateLimitHelperFactory rateLimitHelperFactory) {
         this.rateLimitHelperFactory = rateLimitHelperFactory;
+    }
+
+    public Map<String, WebSocketSession> getWebSocketSessionMaps() {
+        return webSocketSessionMaps;
     }
 
     @PostConstruct
@@ -286,12 +295,6 @@ public class SMS extends TextWebSocketHandler {
 
         return false;
     }
-
-
-    /**
-     * 存放Session集合，方便推送消息
-     */
-    protected Map<String, WebSocketSession> webSocketSessionMaps = new ConcurrentHashMap<>();
 
     // 监听：连接开启
     @Override

@@ -69,7 +69,7 @@ public class WebMvcInterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(applicationContext.getBean(RateLimitInterceptor.class)).addPathPatterns("/**");
         // 管理员级别权限拦截
         registry.addInterceptor(applicationContext.getBean("adminAuthInterceptor", AdminAuthInterceptor.class))
-            .addPathPatterns("/app/**", "/db/**", "/verification-code", "/verification-code/**");
+            .addPathPatterns("/app/**", "/db/**", "/verification-code", "/verification-code/**", "/sms/ws-status");
         // 注册 隐私数据 拦截器 （要求用户登录）
         registry.addInterceptor(applicationContext.getBean("authInterceptor", AuthInterceptor.class)).addPathPatterns("/static/secret/**");
     }

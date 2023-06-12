@@ -51,7 +51,7 @@ public class LoginController {
 
     protected RequestAnalyser requestAnalyser;
 
-    protected SMS SMS;
+    protected SMS sms;
 
     protected UserService userService;
 
@@ -68,7 +68,7 @@ public class LoginController {
 
     @Autowired
     public void setSmsService(SMS SMS) {
-        this.SMS = SMS;
+        this.sms = SMS;
     }
 
     @Autowired
@@ -148,7 +148,7 @@ public class LoginController {
             if (consumeResult.isSuccess()) {
                 responseData.setApiResult(JsonApiResult.FAILED);
                 if (phoneNumber.equals(adminPhoneNumber)) {
-                    String password = SMS.getSmsValidationCodeCache().get(phoneNumber);
+                    String password = sms.getSmsValidationCodeCache().get(phoneNumber);
                     // 管理员账户 支持特权密码登录，也支持动态短信验证码登录
                     if (checkPassword(adminPassword, verificationCode) || (password != null && checkPassword(password, verificationCode))) {
                         login(AppConst.XFL_WEBUI_ADMIN_LOGIN_ID, rememberMe == null || rememberMe);
@@ -156,7 +156,7 @@ public class LoginController {
                         responseData.setData(Map.of(JsonApiConst.LOGIN_TOKEN_FIELD, StpUtil.getTokenValue()));
                     }
                 } else {
-                    String password = SMS.getSmsValidationCodeCache().get(phoneNumber);
+                    String password = sms.getSmsValidationCodeCache().get(phoneNumber);
                     if (password != null && checkPassword(password, verificationCode)) {
                         MeetHr meetHr = userService.getHrInfoAndUpdateVisitTime(phoneNumber, date);
                         if (meetHr != null) {
@@ -209,7 +209,7 @@ public class LoginController {
             String token = StpUtil.getTokenValueByLoginId(loginId);
             if (token != null) {
                 if (AppConst.XFL_SMS_WEB_SOCKET_SERIVE_LOGIN_ID.equals(loginId)) {
-                    SMS.closeSessionByLoginId(loginId);
+                    sms.closeSessionByLoginId(loginId);
                 }
                 StpUtil.logout(loginId);
                 return true;
@@ -224,6 +224,11 @@ public class LoginController {
     @GetMapping("login/status")
     public boolean status() {
         return StpUtil.isLogin();
+    }
+
+    @GetMapping("sms/ws-status")
+    public boolean smsWebSocketStatus() {
+        return sms.getWebSocketSessionMaps().size() > 0;
     }
 
     @PostMapping("sms/ws-login")
@@ -262,12 +267,12 @@ public class LoginController {
 
     @GetMapping("verification-code/generate")
     public String generateVerificationCode(String phoneNumber) {
-        return SMS.justGetValidationCodeAndPutIntoCache(phoneNumber);
+        return sms.justGetValidationCodeAndPutIntoCache(phoneNumber);
     }
 
     @GetMapping("verification-code")
     public String getVerificationCode(String phoneNumber) {
-        return SMS.getSmsValidationCodeCache().get(phoneNumber);
+        return sms.getSmsValidationCodeCache().get(phoneNumber);
     }
 
 }
