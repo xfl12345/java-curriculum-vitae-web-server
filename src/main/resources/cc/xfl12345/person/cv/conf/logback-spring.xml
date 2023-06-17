@@ -86,6 +86,9 @@
 
     <!-- 不想在 控制台 上看到，也不想在 文件日志 里看到。毕竟每秒产生一行，谁也顶不住。 -->
     <logger name="org.apache.tomcat.util.net.NioEndpoint" level="INFO" />
+    <logger name="org.apache.tomcat.util.net.SocketWrapperBase" level="INFO" />
+    <logger name="org.apache.coyote.http11.upgrade.UpgradeProcessorInternal" level="INFO" />
+    <logger name="org.apache.tomcat.websocket.server.WsFrameServer" level="INFO" />
     <logger name="org.apache.catalina.session.ManagerBase" level="INFO" />
     <logger name="com.zaxxer.hikari.pool.HikariPool" level="INFO" />
 </configuration>
