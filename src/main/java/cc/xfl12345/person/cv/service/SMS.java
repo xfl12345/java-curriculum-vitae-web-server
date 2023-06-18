@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -37,7 +38,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -315,6 +319,15 @@ public class SMS extends TextWebSocketHandler {
         log.debug("当前 SMS hashcode=" + this.hashCode());
     }
 
+    @Override
+    protected void handlePongMessage(@Nonnull WebSocketSession session, @Nonnull PongMessage message) throws Exception {
+        super.handlePongMessage(session, message);
+        String loginId = session.getAttributes().get("loginId").toString();
+        // 尝试解决 SpringBoot 莫名其妙结束 session 却依然能维持心跳，导致客户端无法触发断线重连机制的情况
+        if (!webSocketSessionMaps.containsKey(loginId)) {
+            session.close(CloseStatus.SERVER_ERROR);
+        }
+    }
 
     // 监听：连接关闭
     @Override
