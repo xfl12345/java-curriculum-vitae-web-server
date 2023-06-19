@@ -141,39 +141,72 @@ public class ClassPathResourceUtils {
         return base.relativize(child).getPath();
     }
 
-    public static FileSystem getFileSystemViaURL(URL url, ClassLoader classLoader) {
-        try {
-            return FileSystems.getFileSystem(url.toURI());
-        } catch (URISyntaxException | FileSystemNotFoundException e) {
-            // ignore
-        }
-
+    private static FileSystem createFileSystem(URI uri, ClassLoader classLoader) {
         FileSystem fileSystem = null;
         try {
-            String protocol = url.getProtocol();
-            fileSystem = FileSystems.newFileSystem(URI.create(protocol + ":/"), Map.of(), classLoader);
+            fileSystem = FileSystems.newFileSystem(uri, Map.of(), classLoader);
 
             // 注册 JVM 关闭钩子。有始有终。
             FileSystem finalFileSystem = fileSystem;
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     Class<?> fileSystemClass = finalFileSystem.getClass();
-                    finalFileSystem.close();
+                    if (finalFileSystem.isOpen()) {
+                        finalFileSystem.close();
+                    }
                     // do something
-                    System.out.println(String.format("FileSystem [%s] closed safety.", fileSystemClass.getCanonicalName()));
+                    System.out.printf("FileSystem [%s] closed safety.%n", fileSystemClass.getCanonicalName());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }));
-        } catch (IOException | FileSystemAlreadyExistsException e) {
+        } catch (IOException | FileSystemAlreadyExistsException | IllegalArgumentException e) {
             // ignore
         }
 
-        if (fileSystem == null) {
+        return fileSystem;
+    }
+
+    private static FileSystem getFileSystem(URI uri, URI noPathUri) {
+        if (uri != null) {
             try {
-                fileSystem = FileSystems.getFileSystem(url.toURI());
-            } catch (URISyntaxException | FileSystemNotFoundException e) {
+                return FileSystems.getFileSystem(uri);
+            } catch (FileSystemNotFoundException | IllegalArgumentException e) {
                 // ignore
+            }
+        }
+
+        try {
+            return FileSystems.getFileSystem(noPathUri);
+        } catch (FileSystemNotFoundException | IllegalArgumentException e) {
+            // ignore
+        }
+
+        return null;
+    }
+
+    public static FileSystem getFileSystemViaURL(URL url, ClassLoader classLoader) {
+        URI uri = null;
+        URI noPathUri = URI.create(url.getProtocol() + ":/");
+
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException e) {
+            // ignore
+        }
+
+        FileSystem fileSystem = getFileSystem(uri, noPathUri);
+        if (fileSystem == null) {
+            if (uri != null) {
+                fileSystem = createFileSystem(uri, classLoader);
+            }
+
+            if (fileSystem == null) {
+                fileSystem = createFileSystem(noPathUri, classLoader);
+            }
+
+            if (fileSystem == null) {
+                fileSystem = getFileSystem(uri, noPathUri);
             }
         }
 
@@ -424,48 +457,28 @@ public class ClassPathResourceUtils {
 
         Path fileSystemPath = fileSystem.getPath(rootPath);
         try (Stream<Path> pathStream = Files.walk(fileSystemPath).parallel()) {
-            if ("".equals(rootPath)) {
-                pathStream.forEach(path -> {
-                    String theClassPath = path.toString();
-                    Path pathFileName = path.getFileName();
-                    String fileName = pathFileName == null ? "" : pathFileName.toString();
-                    int lastIndexOfSplitChar = theClassPath.lastIndexOf('/');
+            pathStream.forEach(path -> {
+                String pathInText = path.toString();
+                Path pathFileName = path.getFileName();
+                String fileName = pathFileName == null ? "" : pathFileName.toString();
+                String relativeFilePath = pathInText.substring(rootPath.length());
+                if (relativeFilePath.length() > 0) {
+                    int lastIndexOfSplitChar = relativeFilePath.lastIndexOf('/');
                     // 是否位于当前目录
                     boolean isInCurrentFolder = lastIndexOfSplitChar < 0;
                     if (recursive || isInCurrentFolder) {
-                        URL fileURL = isGetURL ? classLoader.getResource(theClassPath) : HACK_URL;
-                        if (fileURL != null && filter.test(new UrlPathDetail(fileURL, theClassPath, theClassPath, fileName, Files.isDirectory(path), Files.isRegularFile(path)))) {
-                            urls.put(theClassPath, fileURL);
+                        URL fileURL = isGetURL ? classLoader.getResource(pathInText) : HACK_URL;
+                        if (fileURL != null && filter.test(new UrlPathDetail(fileURL, pathInText, relativeFilePath, fileName, Files.isDirectory(path), Files.isRegularFile(path)))) {
+                            urls.put(pathInText, fileURL);
                         }
                     }
-                });
-
-            } else {
-                pathStream.forEach(path -> {
-                    String theClassPath = path.toString();
-                    if (theClassPath.startsWith(rootPath)) {
-                        String relativeFilePath = theClassPath.substring(rootPath.length());
-                        Path pathFileName = path.getFileName();
-                        String fileName = pathFileName == null ? "" : pathFileName.toString();
-                        if (relativeFilePath.length() != 0) {
-                            int lastIndexOfSplitChar = relativeFilePath.lastIndexOf('/');
-                            // 是否位于当前目录
-                            boolean isInCurrentFolder = lastIndexOfSplitChar < 0;
-                            if (recursive || isInCurrentFolder) {
-                                URL fileURL = isGetURL ? classLoader.getResource(theClassPath) : HACK_URL;
-                                if (fileURL != null && filter.test(new UrlPathDetail(fileURL, theClassPath, relativeFilePath, fileName, Files.isDirectory(path), Files.isRegularFile(path)))) {
-                                    urls.put(theClassPath, fileURL);
-                                }
-                            }
-                        } else {
-                            URL fileURL = isGetURL ? classLoader.getResource(theClassPath) : HACK_URL;
-                            if (fileURL != null && filter.test(new UrlPathDetail(fileURL, rootPath, relativeFilePath, fileName, Files.isDirectory(path), Files.isRegularFile(path)))) {
-                                urls.put(rootPath, fileURL);
-                            }
-                        }
+                } else {
+                    URL fileURL = isGetURL ? classLoader.getResource(pathInText) : HACK_URL;
+                    if (fileURL != null && filter.test(new UrlPathDetail(fileURL, rootPath, relativeFilePath, fileName, Files.isDirectory(path), Files.isRegularFile(path)))) {
+                        urls.put(rootPath, fileURL);
                     }
-                });
-            }
+                }
+            });
         }
 
         return urls;

@@ -7,12 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.FileUrlResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,22 +53,63 @@ public class WebResourceConfig implements WebMvcConfigurer {
         Resource resource = resourceLocation.startsWith("./") ? new FileSystemResource(resourceLocation) : resourcePatternResolver.getResource(resourceLocation);
         // 如果拦截的是根路径，需要遍历路径下所有文件（因为会导致其它路径无法访问）。
         if ("/**".equals(pathPattern) || "/".equals(pathPattern)) {
-            FileSystemResource fileSystemResource = new FileSystemResource(resourceLocation);
-            if (fileSystemResource.exists()) {
-                String resourceLocationPattern = fileSystemResource.getURL() + "**";
-                Resource[] resources = resourcePatternResolver.getResources(resourceLocationPattern);
-                List<String> pathPatternList = new ArrayList<>(resources.length);
-                for (Resource item : resources) {
-                    String currentPathPattern = pathMatcher.extractPathWithinPattern(resourceLocationPattern, item.getURL().toString());
-                    if (currentPathPattern.length() == 0 || currentPathPattern.charAt(0) != '/') {
-                        currentPathPattern = "/" + currentPathPattern;
+            if (resource instanceof FileSystemResource || resource instanceof FileUrlResource) {
+                if (resource.exists()) {
+                    File rootFile = null;
+                    try {
+                        rootFile = resource.getFile();
+                    } catch (IOException e) {
+                        log.warn(String.format("Getting [%s] from [%s] failed.", File.class.getCanonicalName(), resource.getURL()), e);
                     }
-                    pathPatternList.add(currentPathPattern);
-                }
 
-                justMapResource(registry, pathPatternList, resource);
-            } else {
-                log.info(String.format("Skip mapping request: [%s] <---> [%s], resource type=[%s]. Because of the resource do not exist!", pathPattern, resource.getURL(), resource.getClass().getCanonicalName()));
+                    // 如果单单只是一个文件
+                    if (rootFile != null) {
+                        if (rootFile.isFile()) {
+                            String currentPathPattern = pathMatcher.extractPathWithinPattern(pathPattern, resource.getURL().toString());
+                            if ("/".equals(currentPathPattern)) {
+                                currentPathPattern = '/' + rootFile.getName();
+                            } else if (currentPathPattern.length() == 0 || currentPathPattern.charAt(0) != '/') {
+                                currentPathPattern = "/" + currentPathPattern;
+                            }
+
+                            justMapResource(registry, currentPathPattern, resource);
+                        } else {
+                            String[] rootFileItemNameArray = rootFile.list();
+                            if (rootFileItemNameArray != null) {
+                                List<String> pathPatternList = new ArrayList<>(rootFileItemNameArray.length);
+                                for (String item : rootFileItemNameArray) {
+                                    File file = new File(rootFile, item);
+                                    if (file.isFile()) {
+                                        pathPatternList.add('/' + item);
+                                    } else {
+                                        // justMapResource(registry, '/' + item + "/**", new FileUrlResource(file.toURI().toURL()));  // 这个方法可能会有缓存，修改文件之后网页可能不会更新
+                                        justMapResource(registry, '/' + item + "/**", new FileSystemResource(file.toURI().getPath()));
+                                    }
+                                }
+
+                                justMapResource(registry, pathPatternList, resource);
+                            } else {
+                                log.warn(String.format("Skip mapping request: [%s] <---> [%s], resource type=[%s]. Because of the list of resource is null.", pathPattern, resource.getURL(), resource.getClass().getCanonicalName()));
+                            }
+                        }
+                    } else {
+                        String resourceLocationPattern = resource.getURL() + "**";
+                        Resource[] resources = resourcePatternResolver.getResources(resourceLocationPattern);
+                        List<String> pathPatternList = new ArrayList<>(resources.length);
+                        for (Resource item : resources) {
+                            String currentPathPattern = pathMatcher.extractPathWithinPattern(resourceLocationPattern, item.getURL().toString());
+                            if (currentPathPattern.length() == 0 || currentPathPattern.charAt(0) != '/') {
+                                currentPathPattern = "/" + currentPathPattern;
+                            }
+
+                            pathPatternList.add(currentPathPattern);
+                        }
+
+                        justMapResource(registry, pathPatternList, resource);
+                    }
+                } else {
+                    log.warn(String.format("Skip mapping request: [%s] <---> [%s], resource type=[%s]. Because of the resource do not exist!", pathPattern, resource.getURL(), resource.getClass().getCanonicalName()));
+                }
             }
         } else {
             justMapResource(registry, pathPattern, resource);
