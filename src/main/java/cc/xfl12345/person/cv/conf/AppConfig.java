@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 
 import javax.cache.CacheManager;
 
@@ -21,7 +20,6 @@ public class AppConfig {
     }
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    @DependsOn("bucket4jCacheResolver")
     @Bean
     public AnyUserRequestRateLimitHelperFactory anyUserRequestRateLimitHelperFactory(
         CacheManager cacheManager,

@@ -3,17 +3,16 @@ package cc.xfl12345.person.cv.service;
 import cc.xfl12345.person.cv.pojo.database.MeetHr;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.Op;
-import org.teasoft.bee.osql.SuidRich;
+import org.teasoft.bee.osql.api.Condition;
+import org.teasoft.bee.osql.api.SuidRich;
 import org.teasoft.bee.osql.transaction.Transaction;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 import org.teasoft.honey.osql.core.ConditionImpl;
 import org.teasoft.honey.osql.core.SessionFactory;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Service

@@ -22,8 +22,10 @@ public class RateLimitHelper {
 
 
     protected Bucket generateBucket(SimpleBucketConfig config) {
-        Refill refill = Refill.intervally(config.getRefillToken(), config.getRefillFrequency());
-        Bandwidth limit = Bandwidth.classic(config.getBucketCapacity(), refill);
+        Bandwidth limit = Bandwidth.builder()
+            .capacity(config.getBucketCapacity())
+            .refillIntervally(config.getRefillToken(), config.getRefillFrequency())
+            .build();
 
         return Bucket.builder().addLimit(limit).build();
     }

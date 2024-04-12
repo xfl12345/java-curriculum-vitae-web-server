@@ -228,7 +228,7 @@ public class LoginController {
 
     @GetMapping("sms/ws-status")
     public boolean smsWebSocketStatus() {
-        return sms.getWebSocketSessionMaps().size() > 0;
+        return !sms.getWebSocketSessionMaps().isEmpty();
     }
 
     @PostMapping("sms/ws-login")
@@ -236,7 +236,7 @@ public class LoginController {
         JsonApiResponseData responseData = new JsonApiResponseData(JsonApiConst.VERSION);
         RateLimitHelper.ConsumeResult consumeResult = loginRateLimitHelper.tryConsume(requestAnalyser.getIpAddress(request));
         // 不管有无设置临时过期，都不允许有临时过期问题
-        StpUtil.updateLastActivityToNow();
+        StpUtil.updateLastActiveToNow();
         if (consumeResult.isSuccess()) {
             if (checkPassword(smsWebSocketAccessKeySecret, accessKeySecret)) {
                 if (StpUtil.isLogin()) {
