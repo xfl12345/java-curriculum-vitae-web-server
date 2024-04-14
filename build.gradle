@@ -7,6 +7,7 @@ plugins {
     id 'org.graalvm.buildtools.native' version '0.10.1'
     // id 'org.graalvm.buildtools.native' version '0.9.27'
     // id 'org.openjfx.javafxplugin' version '0.0.13'
+    id 'com.google.cloud.tools.jib' version '3.4.0'
 }
 
 eclipse {
@@ -50,10 +51,10 @@ graalvmNative {
     binaries {
         main {
             buildArgs.addAll([
-                '--verbose',
-                '-H:+AddAllCharsets',
-                '-H:+ReportExceptionStackTraces',
-                '--enable-url-protocols="jar,http,https"'
+                    '--verbose',
+                    '-H:+AddAllCharsets',
+                    '-H:+ReportExceptionStackTraces',
+                    '--enable-url-protocols="jar,http,https"'
             ])
         }
     }
@@ -61,9 +62,58 @@ graalvmNative {
     toolchainDetection = true
 }
 
-tasks.named("bootBuildImage") {
+bootBuildImage {
     environment["BP_JVM_VERSION"] = "17"
 }
+
+jib {
+    from {
+        // image = 'ghcr.io/graalvm/native-image-community:17'
+        image = 'ghcr.io/graalvm/jdk-community:17'
+        platforms {
+            // platform {
+            //     architecture = 'amd64'
+            //     os = 'linux'
+            // }
+            platform {
+                architecture = 'arm64'
+                os = 'linux'
+            }
+        }
+    }
+    container {
+        user '1000:1000'
+    }
+    // extraDirectories {
+    //     paths {
+    //         path {
+    //             from = file('src/main/jib/etc/passwd')
+    //             into = '/etc/passwd'
+    //         }
+    //         path {
+    //             // copies the contents of 'src/main/another/dir' into '/extras' on the container
+    //             from = file('src/main/another/dir')
+    //             into = '/extras'
+    //         }
+    //         path {
+    //             // copies a single-file.xml
+    //             from = 'src/main/resources/xml-files'
+    //             into = '/dest-in-container'
+    //             includes = ['single-file.xml']
+    //         }
+    //         path {
+    //             // copies only .txt files except for 'hidden.txt' at the source root
+    //             from = 'build/some-output'
+    //             into = '/txt-files'
+    //             includes = ['*.txt', '**/*.txt']
+    //             excludes = ['hidden.txt']
+    //         }
+    //     }
+    // }
+
+}
+
+
 
 
 group 'cc.xfl12345'
