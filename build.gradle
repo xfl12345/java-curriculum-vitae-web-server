@@ -63,7 +63,10 @@ graalvmNative {
 }
 
 bootBuildImage {
-    environment["BP_JVM_VERSION"] = "17"
+    environment = [
+        "BP_JVM_VERSION": "17",
+        "BP_PLATFORM_ARCH" : System.getenv("BP_PLATFORM_ARCH") ?: "amd64"
+    ]
 }
 
 jib {
