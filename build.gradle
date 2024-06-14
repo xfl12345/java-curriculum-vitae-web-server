@@ -10,6 +10,10 @@ plugins {
     id 'com.google.cloud.tools.jib' version '3.4.0'
 }
 
+group 'cc.xfl12345'
+version '1.0'
+sourceCompatibility = JavaVersion.VERSION_17
+
 eclipse {
     classpath {
         downloadSources = true
@@ -33,7 +37,7 @@ java {
 
 javadoc {
     options.encoding = 'UTF-8'
-    options.addBooleanOption("Xdoclint:none", true)
+    options.addBooleanOption('Xdoclint:none', true)
 }
 
 // javafx {
@@ -64,9 +68,68 @@ graalvmNative {
 
 bootBuildImage {
     environment = [
-        "BP_JVM_VERSION": "17",
-        "BP_PLATFORM_ARCH" : System.getenv("BP_PLATFORM_ARCH") ?: "amd64"
+        'BP_JVM_VERSION': '17',
+        'BP_PLATFORM_ARCH' : System.getenv('BP_PLATFORM_ARCH') ?: 'amd64'
     ]
+}
+
+static def getDockerArchFromHost() {
+    def envArch = System.getProperty('os.arch')
+    def accurateArchMap = [
+            'amd64': 'amd64',
+            // 'i386': 'i386',
+            // 'i486': 'i386',
+            // 'i586': 'i386',
+            // 'i686': 'i386',
+            // 'x86': 'i386',
+            'x86_64': 'amd64',
+            'armv8': 'arm64',
+            'arm64': 'arm64',
+            'arm64v8': 'arm64',
+            'aarch64': 'arm64',
+            // 'mips': 'mips',        // no even has a name yet
+            // 'ppc': 'ppc',          // no even has a name yet
+            // 'ppc64': 'ppc64',      // no even has a name yet
+            'ppc64le': 'ppc64le',
+            // 's390': 's390',        // no even has a name yet
+            's390x': 's390x',
+            'mips64el': 'mips64le',
+            'mips64le': 'mips64le',
+            // 'riscv32': 'riscv32',  // no even has a name yet
+            'riscv64': 'riscv64'
+    ]
+    def archMap = [
+            '86': 'i386',
+            'arm': 'arm32v7'
+    ]
+
+    def arch = ''
+    for (Map.Entry<String,String> kv : accurateArchMap.entrySet()) {
+        if (envArch == kv.getKey()) {
+            arch = kv.getValue()
+            break
+        }
+    }
+
+    if (getDockerOsPlatformFromHost() == 'windows' && arch == 'amd64') {
+        arch = 'windows-amd64'
+    }
+
+    if (arch == '') {
+        for (Map.Entry<String,String> kv : archMap.entrySet()) {
+            if (envArch.contains(kv.getKey())) {
+                arch = kv.getValue()
+                break
+            }
+        }
+    }
+
+    return arch
+}
+
+static def getDockerOsPlatformFromHost() {
+    // return org.gradle.internal.os.OperatingSystem.current().windows ? 'windows' : 'linux'
+    return 'linux'
 }
 
 jib {
@@ -74,15 +137,15 @@ jib {
         // image = 'ghcr.io/graalvm/native-image-community:17'
         image = 'ghcr.io/graalvm/jdk-community:17'
         platforms {
-            // platform {
-            //     architecture = 'amd64'
-            //     os = 'linux'
-            // }
             platform {
-                architecture = 'arm64'
-                os = 'linux'
+                architecture = getDockerArchFromHost()
+                os = getDockerOsPlatformFromHost()
             }
         }
+    }
+    to {
+        image = getRootProject().getName()
+        tags = ['latest', getProject().getVersion()] as List<String>
     }
     container {
         user '1000:1000'
@@ -116,13 +179,6 @@ jib {
 
 }
 
-
-
-
-group 'cc.xfl12345'
-version '1.0-SNAPSHOT'
-sourceCompatibility = JavaVersion.VERSION_17
-
 repositories {
     mavenLocal()
     mavenCentral()
@@ -136,6 +192,10 @@ repositories {
 }
 
 dependencies {
+
+    // 补全环境，使得 Intelij IDEA 可以调试 build.gradle
+    // https://search.maven.org/artifact/org.apache.groovy/groovy-all/4.0.21/pom
+    testRuntimeOnly 'org.apache.groovy:groovy:4.0.21'
 
     // 调试 SpringBoot loader 时提供源码
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-loader
@@ -220,7 +280,7 @@ dependencies {
     // // 阿里巴巴 短信验证码 云服务API
     // // https://mvnrepository.com/artifact/com.aliyun/alibabacloud-dysmsapi20170525
     // implementation (group: 'com.aliyun', name: 'alibabacloud-dysmsapi20170525', version: '2.0.23') {
-    //     exclude group: "pull-parser", module: "pull-parser"
+    //     exclude group: 'pull-parser', module: 'pull-parser'
     // }
 
     // 注解神器 getter setter toString builder
