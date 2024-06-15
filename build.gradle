@@ -132,6 +132,7 @@ static def getDockerOsPlatformFromHost() {
     return 'linux'
 }
 
+// Official docs URL=https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin
 jib {
     from {
         // image = 'ghcr.io/graalvm/native-image-community:17'
