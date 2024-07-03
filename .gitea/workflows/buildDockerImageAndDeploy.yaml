@@ -22,7 +22,7 @@ jobs:
           echo "GRAALVM_HOME: $GRAALVM_HOME"
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
-          native-image --version
+        #  native-image --version # 内存紧张，跳过内存检查，放弃多余操作
       - name: Build docker image
         run: |
           chmod +x ./gradlew
