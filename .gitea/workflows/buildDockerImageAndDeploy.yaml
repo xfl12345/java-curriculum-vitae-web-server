@@ -15,9 +15,6 @@ jobs:
         run: |
           export
           ./setup_gradle_proxy_from_environment.sh
-          ls -lah ~/.gradle/gradle.properties
-          cat ~/.gradle/gradle.properties
-          exit 1
       - name: Setup JAVA environment
         uses: graalvm/setup-graalvm@v1
         with:
