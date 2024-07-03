@@ -26,5 +26,5 @@ jobs:
       - name: Build docker image
         run: |
           chmod +x ./gradlew
-          ./gradlew jibDockerBuild
+          ./gradlew jibDockerBuild --info
       - run: echo "🍏 This job's status is ${{ job.status }}."
