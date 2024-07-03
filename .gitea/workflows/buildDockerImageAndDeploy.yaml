@@ -27,4 +27,16 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew jibDockerBuild --info
+      - name: Deploy docker image
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_SSH_HOST }}
+          username: ${{ secrets.REMOTE_SSH_USERNAME }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          port: ${{ secrets.REMOTE_SSH_PORT }}
+          script: |
+            docker_compose_dir=$(docker inspect xfl-cv-javaweb -f '{{json .Config.Labels}}' | jq -r '."com.docker.compose.project.working_dir"')
+            docker_compose_file=$(docker inspect xfl-cv-javaweb -f '{{json .Config.Labels}}' | jq -r '."com.docker.compose.project.config_files"')
+            cd $docker_compose_dir
+            docker compose up -f "$docker_compose_file" -d --remove-orphans
       - run: echo "🍏 This job's status is ${{ job.status }}."
