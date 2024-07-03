@@ -11,6 +11,8 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ gitea.workspace }}
+          export
+          exit 1
       - name: Setup JAVA environment
         uses: graalvm/setup-graalvm@v1
         with:
