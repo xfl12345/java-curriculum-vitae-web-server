@@ -1,0 +1,18 @@
+name: Gitea Actions Demo
+run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
+on: [push]
+
+jobs:
+  build-docker-image-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: List files in the repository
+        run: |
+          ls ${{ gitea.workspace }}
+      - name: Build docker image
+        run: |
+          chmod +x ./gradlew
+          ./gradlew jibDockerBuild
+      - run: echo "🍏 This job's status is ${{ job.status }}."
